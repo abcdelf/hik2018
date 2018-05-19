@@ -658,20 +658,22 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
             return nRet;
         }
 
-        nRet = JSONGetValue(pGood, "left_time", false, &(pstStatus->astGoods[i].nLeftTime));
-        if (nRet != 0)
-        {
-          //because there were no left_time in json for some times.
-            //printf("JSONGetValue error\n");
-            //return nRet;
-        }
-
         nRet = JSONGetValue(pGood, "status", false, &(pstStatus->astGoods[i].nState));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
+
+				if (pstStatus->astGoods[i].nState == 0) {
+					// if status is not 0, I don't care about left_time.
+	        nRet = JSONGetValue(pGood, "left_time", false, &(pstStatus->astGoods[i].nLeftTime));
+	        if (nRet != 0)
+	        {
+	            printf("JSONGetValue error\n");
+	            return nRet;
+	        }
+	      }
     }
 
     cJSON_Delete(pJsonRoot);
