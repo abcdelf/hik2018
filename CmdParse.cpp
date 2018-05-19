@@ -4,7 +4,7 @@
  *
  *	@author     lipengfei
  *	@date       2018/05/10
- *	@note       ÀúÊ·¼ÇÂ¼£º
+ *	@note       å†å²è®°å½•ï¼š
  *	@note       V1.0.0  
  *	@warning	
  */
@@ -207,7 +207,7 @@ int ParserMapInfo(char *pBuffer, MAP_INFO *pstMap)
         return nRet;
     }
 
-    //½âÎöbuiding
+    //è§£æbuiding
     cJSON       *pBuilding = cJSON_GetObjectItem(pMap, "building");
     
     if (pBuilding == NULL)
@@ -350,7 +350,7 @@ int ParserMapInfo(char *pBuffer, MAP_INFO *pstMap)
         }
     }
 
-    // ÎŞÈË»ú
+    // æ— äººæœº
     cJSON       *pUav = cJSON_GetObjectItem(pMap, "init_UAV");
     if (pUav == NULL)
     {
@@ -366,7 +366,7 @@ int ParserMapInfo(char *pBuffer, MAP_INFO *pstMap)
         return nRet;
     }
 
-    // ÎŞÈË»ú¼Ó¸öĞÅÏ¢
+    // æ— äººæœºåŠ ä¸ªä¿¡æ¯
     cJSON       *pUavPrice = cJSON_GetObjectItem(pMap, "UAV_price");
     if (pUav == NULL)
     {
@@ -550,7 +550,7 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
         return nRet;
     }
 
-    // ÎÒ·½ÎŞÈË»ú
+    // æˆ‘æ–¹æ— äººæœº
     cJSON       *pUav = cJSON_GetObjectItem(pJsonRoot, "UAV_we");
     if (pUav == NULL)
     {
@@ -566,7 +566,7 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
         return nRet;
     }
 
-    // µĞ·½
+    // æ•Œæ–¹
     pUav = cJSON_GetObjectItem(pJsonRoot, "UAV_enemy");
     if (pUav == NULL)
     {
@@ -582,7 +582,7 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
         return nRet;
     }
 
-    // ÎïÆ·
+    // ç‰©å“
     cJSON   *pGoods = cJSON_GetObjectItem(pJsonRoot, "goods");
 
     pstStatus->nGoodsNum = cJSON_GetArraySize(pGoods);
@@ -658,6 +658,14 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
             return nRet;
         }
 
+        nRet = JSONGetValue(pGood, "left_time", false, &(pstStatus->astGoods[i].nLeftTime));
+        if (nRet != 0)
+        {
+          //because there were no left_time in json for some times.
+            //printf("JSONGetValue error\n");
+            //return nRet;
+        }
+
         nRet = JSONGetValue(pGood, "status", false, &(pstStatus->astGoods[i].nState));
         if (nRet != 0)
         {
@@ -697,7 +705,7 @@ int CreateTokenInfo(TOKEN_INFO *pstInfo, char *pBuffer, int *pLen)
         return nRet;
     }
 
-    // ¿½±´Êı¾İ
+    // æ‹·è´æ•°æ®
     char    *pJsonbuffer = cJSON_Print(pRoot);
 
     sprintf(pBuffer, "%08d", strlen(pJsonbuffer));
@@ -740,7 +748,7 @@ int CreateReadyParam(READY_PARAM *pstParam, char *pBuffer, int *pLen)
         return nRet;
     }
 
-    // ¿½±´Êı¾İ
+    // æ‹·è´æ•°æ®
     char    *pJsonbuffer = cJSON_Print(pRoot);
 
     sprintf(pBuffer, "%08d", strlen(pJsonbuffer));
@@ -781,7 +789,7 @@ int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLe
         return nRet;
     }
 
-    // ÉèÖÃÎŞÈË»úĞÅÏ¢
+    // è®¾ç½®æ— äººæœºä¿¡æ¯
     cJSON           *pUavArray = cJSON_CreateArray();
 
     cJSON_AddItemToObject(pRoot, "UAV_info", pUavArray);
@@ -798,7 +806,7 @@ int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLe
         cJSON_AddItemToObject(pUav, "goods_no", cJSON_CreateNumber(pstPlane->astUav[i].nGoodsNo));
     }
 
-    //¹ºÂòÇëÇó
+    //è´­ä¹°è¯·æ±‚
     cJSON           *pPurchase = cJSON_CreateArray();
 
 
@@ -812,7 +820,7 @@ int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLe
         cJSON_AddItemToObject(pChase, "purchase", cJSON_CreateString(pstPlane->szPurchaseType[i]));
     }
 
-    // ¿½±´Êı¾İ
+    // æ‹·è´æ•°æ®
     char    *pJsonbuffer = cJSON_Print(pRoot);
 
     sprintf(pBuffer, "%08d", strlen(pJsonbuffer));

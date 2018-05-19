@@ -4,7 +4,7 @@
  *
  *	@author     lipengfei
  *	@date       2018/05/10
- *	@note       ÀúÊ·¼ÇÂ¼£º
+ *	@note       å†å²è®°å½•ï¼š
  *	@note       V1.0.0  
  *	@warning	
  */
@@ -13,7 +13,7 @@
 
 #include "JsonParse.h"
 
-#define SOCKET_HEAD_LEN          8                      ///< 8¸ö×Ö½ÚµÄÍ·²¿³¤¶È
+#define SOCKET_HEAD_LEN          8                      ///< 8ä¸ªå­—èŠ‚çš„å¤´éƒ¨é•¿åº¦
 
 
 typedef struct _CONNECT_NOTICE_
@@ -93,7 +93,7 @@ typedef struct _UAV_
     int     nX;
     int     nY;
     int     nZ;
-    int     nLoadWeight;            ///< ¸útype¶ÔÓ¦µÄÎŞÈË»úµÄÔØÖØÒ»Ñù£¬
+    int     nLoadWeight;            ///< è·Ÿtypeå¯¹åº”çš„æ— äººæœºçš„è½½é‡ä¸€æ ·ï¼Œ
     UAV_STATUS  nStatus;
     int     nGoodsNo;
 }UAV;
@@ -152,6 +152,7 @@ typedef struct _GOODS_
     int     nValue;
     int     nStartTime;
     int     nRemainTime;
+    int     nLeftTime;
     int     nState;
 }GOODS;
 
