@@ -1,55 +1,55 @@
 /**	@file       JsonParse.h
  *	@note       Hikvision Digital Technology Co., Ltd. All Right Reserved.
- *	@brief		json½âÎö
+ *	@brief		jsonè§£æ
  *
  *	@author     lipengfei
  *	@date       2015/12/09
- *	@note       ÀúÊ·¼ÇÂ¼£º
- *	@note       V1.0.0  
- *	@warning	
+ *	@note       å†å²è®°å½•ï¼š
+ *	@note       V1.0.0
+ *	@warning
  */
 #ifndef __JSONPARSE_H__
 #define __JSONPARSE_H__
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "cJSON.h"
+#include "include/cJSON.h"
 
 
 /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, int *pValue, int nNullValue )
- *  @brief	»ñÈ¡½ÚµãÖµ
- *	@param  -I   - const cJSON * pJson          ¸¸½Úµã
- *	@param  -I   - const char * szJsonName      ½ÚµãÃû³Æ
- *	@param  -I   - int * pValue                 ½ÚµãÖµ
- *	@param  -I   - int nNullValue               Ä¬ÈÏÖµ
- *	@return int                                 0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	è·å–èŠ‚ç‚¹å€¼
+ *	@param  -I   - const cJSON * pJson          çˆ¶èŠ‚ç‚¹
+ *	@param  -I   - const char * szJsonName      èŠ‚ç‚¹åç§°
+ *	@param  -I   - int * pValue                 èŠ‚ç‚¹å€¼
+ *	@param  -I   - int nNullValue               é»˜è®¤å€¼
+ *	@return int                                 0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString, int *pValue, int nNullValue = 0);
 
 /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, char *szValue, int nLen)
- *  @brief	»ñÈ¡½ÚµãÖµ
- *	@param  -I   - const cJSON * pJson      ¸¸½Úµã
- *	@param  -I   - const char * szJsonName  ½ÚµãÃû³Æ
- *	@param  -I   - char * szValue           Ä¬ÈÏÖµ
- *	@param  -I   - int nLen                 ³¤¶È
- *	@return int                             0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	è·å–èŠ‚ç‚¹å€¼
+ *	@param  -I   - const cJSON * pJson      çˆ¶èŠ‚ç‚¹
+ *	@param  -I   - const char * szJsonName  èŠ‚ç‚¹åç§°
+ *	@param  -I   - char * szValue           é»˜è®¤å€¼
+ *	@param  -I   - int nLen                 é•¿åº¦
+ *	@return int                             0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, char *szValue, int nLen);
 
 /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, float *pValue, float fNullValue )
- *  @brief	»ñÈ¡½ÚµãÖµ
- *	@param  -I   - const cJSON * pJson      ¸¸½Úµã
- *	@param  -I   - const char * szJsonName  ½ÚµãÃû³Æ
- *	@param  -I   - float * pValue           Öµ
- *	@param  -I   - float fNullValue         Ä¬ÈÏÖµ
- *	@return int                             0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	è·å–èŠ‚ç‚¹å€¼
+ *	@param  -I   - const cJSON * pJson      çˆ¶èŠ‚ç‚¹
+ *	@param  -I   - const char * szJsonName  èŠ‚ç‚¹åç§°
+ *	@param  -I   - float * pValue           å€¼
+ *	@param  -I   - float fNullValue         é»˜è®¤å€¼
+ *	@return int                             0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString,  double *pValue, double fNullValue = 0.0);
 
 
 
 /** @fn     int JSONSetValue(cJSON *pJson, const char *szJsonName, char *szValue)
- *  @brief	
+ *  @brief
  *	@param  -I   - cJSON * pJson
  *	@param  -I   - const char * szJsonName
  *	@param  -I   - char * szValue

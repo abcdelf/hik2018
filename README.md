@@ -1,16 +1,32 @@
-### 注意事项
+# IMPLEMENTATION OF A* ARTIFICIAL INTELLIGENCE ALGORITHM (in C++)
+
+Introduction
+------------
+
+This repository contains the implementation for the A* algorithm in language C++. 
+* folder *include/* contains the headers
+* folder *src/* contains the classes used
+* folder *input_files/* contains the test example input files
+* in the *root* folder, you can find the makefiles used for the build process
+
+Compilation & Execution
+-----------------------
+
+####Compilation
+```sh
+git clone https://github.com/dimosr7/Pathfinding
+cd Pathfinding/C++
+make
 ```
-G++版本：7.2.0
-MAKE版本：GNU Make 4.1
-APT源：https://mirrors.aliyun.com/ubuntu/
-操作系统(64位)：Ubuntu 16.04.3 LTS下使用docker运行buildpack-deps:artful镜像
-```
-#### 1、你的依赖包安装请写在可执行文件./configure中，注意使用apt-get install -y，以免被交互打断；
-#### 2、如果你没有额外依赖包，也要准备一个空的可执行文件./configure；
-#### 3、请提供Makefile进行编译生成，生成的目标文件名必须是main.exe，备注：ubuntu也可以是以.exe结尾。
-#### 4、评测命令：./main.exe 39.106.111.130 4010 ABC123DEFG
-```
-参数1：39.106.111.130，是裁判服务器的IP，您在本地调试时，可在“我的对战”中获取；正式评测时，由评测调度程序生成；
-参数2：4010，是裁判服务器允许您连接的端口，您在本地调试时，可在“我的对战”中获取；正式评测时，由评测调度程序生成；
-参数3：字符串，是本次运行的令牌，以便校验您的资格，您在本地调试时，可在“我的对战”中获取；正式评测时，由评测调度程序生成。
+
+####Execution
+```sh
+./A-star input_files/small_1.txt
+./A-star input_files/small_2.txt
+./A-star input_files/medium_1.txt
+./A-star input_files/medium_2.txt
+./A-star input_files/medium_3.txt
+./A-star input_files/medium_4.txt
+./A-star input_files/medium_5.txt
+./A-star input_files/large.txt
 ```
