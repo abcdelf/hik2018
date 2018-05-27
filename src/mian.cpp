@@ -123,11 +123,11 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
 
     for(int i=0;i<pstMatch->nUavWeNum;i++)
     {
-     //   printf("%dth,auv num:%d,auv state:%d\n",i,pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i].nStatus);
+        printf("%dth,auv num:%d,auv state:%d\n",i,pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i].nStatus);
     };
     for(int i=0;i<pstMatch->nGoodsNum;i++)
     {
-    //printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
+        printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
     };
      
     pplane->set_newmatch(pstMatch);
@@ -189,7 +189,7 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
     for(int uavnum=0;uavnum<pstMatch->nUavWeNum;uavnum++)
     {
         // if(pstMatch->astWeUav[uavnum].nStatus==1)
-        // continue;
+        //     continue;
         matchstatus->JudWauvSta(uavnum,matchstatus->which_goods(uavnum));
 	
         int i=matchstatus->mauvstate[uavnum];

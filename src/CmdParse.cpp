@@ -798,6 +798,9 @@ int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLe
 
     for (int i = 0; i < pstPlane->nUavNum; i++)
     {
+        if(pstPlane->astUav[i].nStatus)
+	        continue;
+
         cJSON *pUav = cJSON_CreateObject();
 
         cJSON_AddItemToArray(pUavArray, pUav);
