@@ -104,25 +104,25 @@ void SquareGraph::printPath(vector<Node> path){
 	pair<int, int> startNode = getFirstRobotPos();
 	pair<int, int> goalNode  = getSecondRobotPos();
 
-	for(auto i = 0;i<map[0].size();i++)
-	{
-		for(auto j = 0;j<map.size();j++)
-		{
-			if( startNode == make_pair(i,j))
-			{
-				cout << "S";
-			}else if(goalNode == make_pair(i,j))
-			{
-				cout << "G";
-			}else
-			{
-				cout << (map[i][j].getType()==1? "X":" ");
-			}
+	// for(auto i = 0;i<map[0].size();i++)
+	// {
+	// 	for(auto j = 0;j<map.size();j++)
+	// 	{
+	// 		if( startNode == make_pair(i,j))
+	// 		{
+	// 			cout << "S";
+	// 		}else if(goalNode == make_pair(i,j))
+	// 		{
+	// 			cout << "G";
+	// 		}else
+	// 		{
+	// 			cout << (map[i][j].getType()==1? "X":" ");
+	// 		}
 			
-		}
-		cout << endl;
-	}
-	cout << "--- Path to target ---" << endl;
+	// 	}
+	// 	cout << endl;
+	// }
+	// cout << "--- Path to target ---" << endl;
 	for(auto i = 0;i<map[0].size();i++)
 	{
 		for(auto j = 0;j<map.size();j++)
@@ -157,10 +157,10 @@ void SquareGraph::printPath(vector<Node> path){
 		cout << endl;
 	}
 
-	for(auto i=path.begin(); i != path.end(); i++){
-		Node node = *i;
-		cout << "node : (" << node.x << "," << node.y << ")" << endl;
-	}
+	// for(auto i=path.begin(); i != path.end(); i++){
+	// 	Node node = *i;
+	// 	cout << "node : (" << node.x << "," << node.y << ")" << endl;
+	// }
 }
 
 vector<Node> SquareGraph::executeAStar(){

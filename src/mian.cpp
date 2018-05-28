@@ -190,8 +190,8 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
     //  printf("%d ;start\r\n",pstMatch->nUavWeNum);
     for(int uavnum=0;uavnum< pstMatch->nUavWeNum;uavnum++)
     {
-        // if(pstMatch->astWeUav[uavnum].nStatus==1)
-        //     continue;
+        if(pstMatch->astWeUav[uavnum].nStatus==1)
+             continue;
         matchstatus->JudWauvSta(uavnum,matchstatus->which_goods(uavnum));
 	
         int i=matchstatus->mauvstate[uavnum];
@@ -460,35 +460,42 @@ int main(int argc, char *argv[])
     mymap->map_build();//构建地图信息by hjw
 
     //初始化
+    // int mmapDimension = max(mymap->getMapXsize(),mymap->getMapYsize());
+    // SquareGraph *mySquareGreph = new SquareGraph(mmapDimension);
 
+    // for(int n=0;n< mmhhigh-mmhlow+1;n++)
+    // {
+    //     for(int i = 0; i< mymap->getMapXsize();i++){
+    //         for(int j=0; j< mymap->getMapYsize(); j++){
 
-    // for(int i = 0; i< mymap->getMapXsize();i++){
-    //     for(int j=0; j< mymap->getMapYsize(); j++){
+    //             char type = mymap->get_mappoint(i,j,mmhlow+n);
+    //             mySquareGreph->setCellValue(make_pair(i, j), type);
+    //         }
+    //     } //初始化最初的地图
+        
+    //     // vector<pair<int, int>> obstaclePos;
+    //     // obstaclePos.push_back(make_pair(1,1));
+    //     // obstaclePos.push_back(make_pair(1,2));
 
-    //         char type = mymap->get_mappoint(i,j,9);
-    //         mySquareGreph->setCellValue(make_pair(i, j), type);
-    //     }
-    // } //初始化最初的地图
-    
-    // vector<pair<int, int>> obstaclePos;
-    // obstaclePos.push_back(make_pair(1,1));
-    // obstaclePos.push_back(make_pair(1,2));
+    //     // mySquareGreph->setObstaclePos(obstaclePos);
+        
+    //     mySquareGreph->setFirstRobotPos(make_pair(0,0));
+    //     mySquareGreph->setSecondRobotPos(make_pair(mymap->getMapXsize()-1,mymap->getMapYsize()-1));
+    //     // mySquareGreph->setSecondRobotPos(make_pair(1,1));
 
-    // mySquareGreph->setObstaclePos(obstaclePos);
-    
-    // mySquareGreph->setFirstRobotPos(make_pair(0,0));
-    // // graph.setSecondRobotPos(make_pair(mymap->getMapXsize()-1,mymap->getMapYsize()-1));
-    // mySquareGreph->setSecondRobotPos(make_pair(1,1));
+    //     vector<Node> path = mySquareGreph->executeAStar();
+    //     mySquareGreph->printPath(path);
 
-    // vector<Node> path = mySquareGreph->executeAStar();
-    // mySquareGreph->printPath(path);
-
-
-    // cout << "The total number of moves from distance to the target are : " << path.size() << endl;;
-    // cout << "You want to see the whole path to the target ? (y/n) " << endl;
+    //     // cout << "The total number of moves from distance to the target are : " << path.size() << endl;;
+    //     // cout << "You want to see the whole path to the target ? (y/n) " << endl;
+        
+    // }
     // string response;
     // cin >> response;
-   
+
+    // delete mySquareGreph;
+
+
     pathSearch * mySearch = new pathSearch(mymap);
 
     PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch);

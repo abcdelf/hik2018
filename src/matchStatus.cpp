@@ -31,7 +31,7 @@ MATCHSTATUS::MATCHSTATUS(MAP_INFO *pstMap):mpstMap(pstMap)
 void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没有给无人机安排取货物认为
 {
   int goods_num;
-  for(goods_num=0;goods_num<mpstMatch->nGoodsNum;goods_num++)
+  for(goods_num=0;goods_num< mpstMatch->nGoodsNum;goods_num++)
   {
     if(goods_no==mpstMatch->astGoods[goods_num].nNO)
       break;	  
@@ -93,64 +93,77 @@ void MATCHSTATUS::auv_goods()
 {
   for(int i=0;i<mpstMatch->nUavWeNum;i++)
   {
+    float  bestPercentWorth = 0;
     int best_dis=1000;
     int best_goosnum=0;
     if(mpstMatch->nGoodsNum==0)        //当没有货物时全部归0
     {
-     plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
-     continue;
+      plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
+      continue;
     }
     if(mpstMatch->astWeUav[i].nStatus)   //无人机坠毁
     {
       plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
-       continue;
+      continue;
     } 
     if(mauvstate[i]!=SEARCH)                     //只在搜索状态时更新
       continue;
     
 
-    for(int j=0;j<mpstMatch->nGoodsNum;j++)
+    for(int j=0;j< mpstMatch->nGoodsNum;j++)
     {
       
       if(!mpstMatch->astGoods[j].nState&&plane_goods[mpstMatch->astWeUav[i].nNO]!=-1)      //如果货物j不可被捡起，但是设置i飞机去捡起，就让i飞机放弃j货物
-	plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
-      //if(plane_goods[mpstMatch->astWeUav[i].nNO]!=-1)
-     // continue;
-        int delect_flag=0;
-	for(map<int,int>::iterator it=plane_goods.begin();it!=plane_goods.end();it++)          //如果货物已经分配给自己队伍飞机，就不再进行分配
-	{
-	  if(it->first>mpstMatch->nUavWeNum)                  //plane_goods初始化时较大，提前结束
-	    break;
-	  if(it->second==mpstMatch->astGoods[j].nNO)
-	  {
-	    delect_flag=1;
-	     break;
-	  }
-	}	   
+	      plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
+
+      int delect_flag=0;
+      for(map<int,int>::iterator it=plane_goods.begin();it!=plane_goods.end();it++)          //如果货物已经分配给自己队伍飞机，就不再进行分配
+      {
+        if(it->first>mpstMatch->nUavWeNum)                  //plane_goods初始化时较大，提前结束
+          break;
+        if(it->second==mpstMatch->astGoods[j].nNO)
+        {
+          delect_flag=1;
+          break;
+        }
+      }	   
       if(delect_flag)
-	continue;
+	      continue;
 
       if(mpstMatch->astGoods[j].nState)      //status为0表示货物正常且可以被拾起
-	continue;
-      if(mpstMatch->astWeUav[i].nLoadWeight<mpstMatch->astGoods[j].nWeight)
-	continue;
-       int distance_get=abs((mpstMatch->astWeUav[i].nX-mpstMatch->astGoods[j].nStartX))+abs((mpstMatch->astWeUav[i].nY-mpstMatch->astGoods[j].nStartY))+mpstMatch->astWeUav[i].nZ;
-       int distance_put=abs((mpstMatch->astGoods[j].nEndX-mpstMatch->astGoods[j].nStartX))+abs((mpstMatch->astGoods[j].nEndY-mpstMatch->astGoods[j].nStartY));
-       int left_time=mpstMatch->astGoods[j].nRemainTime+mpstMatch->astGoods[j].nStartTime-mpstMatch->nTime;
-       int distance=distance_get+distance_put;
+	      continue;
+      if(mpstMatch->astWeUav[i].nLoadWeight< mpstMatch->astGoods[j].nWeight)
+	      continue;
+      int distance_get=abs((mpstMatch->astWeUav[i].nX-mpstMatch->astGoods[j].nStartX))+abs((mpstMatch->astWeUav[i].nY-mpstMatch->astGoods[j].nStartY))+mpstMatch->astWeUav[i].nZ;
+      int distance_put=abs((mpstMatch->astGoods[j].nEndX-mpstMatch->astGoods[j].nStartX))+abs((mpstMatch->astGoods[j].nEndY-mpstMatch->astGoods[j].nStartY));
+      int left_time=mpstMatch->astGoods[j].nRemainTime+mpstMatch->astGoods[j].nStartTime-mpstMatch->nTime;
+
       if(distance_get<left_time)
       {
-         if(distance<best_dis)    
-	 {
-	   best_dis=distance;
-	   best_goosnum=j;	   
-	}
+        float goodsWorth = mpstMatch->astGoods[j].nValue;
+        float distance = distance_get+distance_put;
+        float planeLoadWeight = mpstMatch->astWeUav[i].nLoadWeight;
+        float percentWorth = (float)(goodsWorth/distance/planeLoadWeight);
+        //printf("percentWorth=%f\n",percentWorth);
+
+        if(percentWorth > bestPercentWorth)
+        {
+          bestPercentWorth = percentWorth;
+          best_goosnum=j;	  
+        }
+
+        // if(distance<best_dis)    
+        // {
+        //   best_dis=distance;
+        //   best_goosnum=j;	   
+        // }
       } 
     }   
-    if(best_dis==1000&&best_goosnum==0)
+
+    if(bestPercentWorth==0&&best_goosnum==0)
       continue;
     plane_goods[mpstMatch->astWeUav[i].nNO]=mpstMatch->astGoods[best_goosnum].nNO;
-    printf("%dplane,best_dis%d,best_goosnum:%d,\n",i,best_dis,best_goosnum);
+    printf("%dplane,bestPercentWorth%f,best_goosnum:%d,\n",i,bestPercentWorth,best_goosnum);
   }
 }
   

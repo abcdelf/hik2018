@@ -68,8 +68,8 @@ typedef struct _FOG_
 
 
 
-#define MAX_BUILDING_NUM        50      
-#define MAX_FOG_NUM        50
+#define MAX_BUILDING_NUM        130      
+#define MAX_FOG_NUM        130
 
 #define MAX_UAV_NUM         512
 
