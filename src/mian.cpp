@@ -251,6 +251,10 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
             pplane->plane_put(uavnum,0);
             printf("to put......\n");	 
             break;
+        case 6:
+            printf("to track......\n");	 
+            
+            break;
         }
       }
 

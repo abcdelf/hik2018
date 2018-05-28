@@ -405,7 +405,88 @@ FLAY_PLANE* PLANE::renew()
   return mpstFlayPlane;
 }
 
+pair<int, int> PLANE::plane_trackEnemy(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos)
+{
+  //plane_num 我方攻击机器的ID， enemy_id 敌方机器ID， 
+  int uavX = mpstMatch->astWeUav[plane_num].nX;
+  int uavY = mpstMatch->astWeUav[plane_num].nY;
+  int uavZ = mpstMatch->astWeUav[plane_num].nZ;
 
+  if(goods_no==-1)
+    return make_pair(uavX,uavY);
+  int goods_num;
+  for(goods_num=0;goods_num<mpstMatch->nGoodsNum;goods_num++)
+  {
+    if(goods_no==mpstMatch->astGoods[goods_num].nNO)
+      break;	  
+  }
+
+  int goodsXStart = mpstMatch->astGoods[goods_num].nEndX;
+  int goodsYStart = mpstMatch->astGoods[goods_num].nEndY;
+
+  printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
+  //mstar->findpath(uavX, uavY, uavZ, goodsXStart, goodsYStart,uavZ);
+
+  vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(goodsXStart,goodsYStart),uavZ,obstaclePos);
+  int uavNextX=uavX;
+  int uavNextY=uavY;
+  int uavNextZ=uavZ;
+  if(path.size()>1)
+  {
+    auto p=path.begin();
+    
+    p++;
+    Node node = *p;
+    uavNextX = node.x;
+    uavNextY = node.y;
+    uavNextZ = uavZ;
+      
+  }else if(uavZ < mmap->getMaxFlyHeight()-1)
+  {
+    uavNextZ = uavZ+1;
+
+  }
+  printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
+  
+    if(uavNextZ<uavZ)
+  {
+    if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
+    {    
+      uavNextX=uavX;
+      uavNextY=uavY;
+    }
+    else
+    {
+      int flag=0;
+      for(int i=-1;i<2;i++)
+      {	
+	for(int j=-1;j<2;j++)
+	{
+	  if(i==0&&j==0)
+	    continue;
+	  if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
+	  {
+	    uavNextX=uavX+i;
+	    uavNextY=uavY+j;
+	    uavNextY=uavZ;
+	    flag=1;
+	    break;
+	  }	 
+	}	
+	if(flag==1)
+	  break;
+      }	   
+    }
+  }
+
+  //if(mstar->getPathSize()>1)
+  {
+    mpstFlayPlane->astUav[plane_num].nY = uavNextY;
+    mpstFlayPlane->astUav[plane_num].nX = uavNextX;
+    mpstFlayPlane->astUav[plane_num].nZ = uavNextZ;
+  }
+  return  make_pair(uavNextX,uavNextY);
+}
 
 
   

@@ -38,12 +38,12 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
   }
   if(mpstMatch->astWeUav[plane_num].nGoodsNo!=-1)//无人机载货
   {
-    if(mpstMatch->astWeUav[plane_num].nZ>=mhlow)    
+    if(mpstMatch->astWeUav[plane_num].nZ>=mhlow)//无人机大于最低高度限制    
     {
-      mauvstate[plane_num]=TRANS;
+      mauvstate[plane_num]=TRANS;//去搜索货物目标点
       if(mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nEndX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nEndY)
       {
-        mauvstate[plane_num]=TO_PUT;	
+        mauvstate[plane_num]=TO_PUT;//到达货物目标点去放货	
         if(mpstMatch->astWeUav[plane_num].nZ==0)
           plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
       }
@@ -51,10 +51,10 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
     else
     {
       if(mpstMatch->astGoods[goods_num].nState==1&&mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nStartX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nStartY)//nState表示被拾起
-	      mauvstate[plane_num]=BACK_TRANS;
+	      mauvstate[plane_num]=BACK_TRANS;//从货物起始点向上运动到最低限度
       if(mpstMatch->astGoods[goods_num].nState==1&&mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nEndX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nEndY)//nState表示被拾起
       {
-        mauvstate[plane_num]=TO_PUT;	
+        mauvstate[plane_num]=TO_PUT;	//到达货物目标点去放货
         if(mpstMatch->astWeUav[plane_num].nZ==0)
           plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
       }
@@ -64,7 +64,14 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
   {
     if(mpstMatch->astWeUav[plane_num].nZ>=mhlow)  
     {
-      mauvstate[plane_num]=SEARCH;
+
+      if(mpstMatch->astWeUav[plane_num].nLoadWeight == minLoadWeight)//如果飞机是最低载重量的飞机，则作为攻击机器使用
+      {
+        mauvstate[plane_num] = TO_EnemyUav;//搜索攻击敌方无人机
+      }else{
+        mauvstate[plane_num] = SEARCH;//搜索货物目标点
+      }
+      
       if(mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nStartX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nStartY)
       {
 	      mauvstate[plane_num]=TO_GET;
@@ -108,7 +115,8 @@ void MATCHSTATUS::auv_goods()
     } 
     if(mauvstate[i]!=SEARCH)                     //只在搜索状态时更新
       continue;
-    
+    if(mauvstate[i]==TO_EnemyUav)//如果是攻击机器，则不作为载货机器使用
+      continue;
 
     for(int j=0;j< mpstMatch->nGoodsNum;j++)
     {
@@ -140,10 +148,10 @@ void MATCHSTATUS::auv_goods()
 
       if(distance_get<left_time)
       {
-        float goodsWorth = mpstMatch->astGoods[j].nValue;
-        float distance = distance_get+distance_put;
+        float goodsWorth      = mpstMatch->astGoods[j].nValue;
+        float distance        = distance_get+distance_put;
         float planeLoadWeight = mpstMatch->astWeUav[i].nLoadWeight;
-        float percentWorth = (float)(goodsWorth/distance/planeLoadWeight);
+        float percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);
         //printf("percentWorth=%f\n",percentWorth);
 
         if(percentWorth > bestPercentWorth)
@@ -152,11 +160,6 @@ void MATCHSTATUS::auv_goods()
           best_goosnum=j;	  
         }
 
-        // if(distance<best_dis)    
-        // {
-        //   best_dis=distance;
-        //   best_goosnum=j;	   
-        // }
       } 
     }   
 

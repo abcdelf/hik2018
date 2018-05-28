@@ -30,12 +30,13 @@ public:
 public:
   enum auvstate
   {
-    BACK_SEARCH=0,
-    SEARCH=1,
-    TO_GET=2,
-    BACK_TRANS=3,
-    TRANS=4,
-    TO_PUT=5
+    BACK_SEARCH=0,//向上运动到最低限制高度
+    SEARCH=1,     //向货物起始点搜索路径
+    TO_GET=2,     //向下去获取货物
+    BACK_TRANS=3, //获取到货物并向上运动到最低限飞高度
+    TRANS=4,      //向货物目标点搜索路径
+    TO_PUT=5,     //到达货物目标点并向下去放置货物
+    TO_EnemyUav=6,//追踪敌方无人机
   };
   vector<int> mauvstate;
   map<int,int> plane_goods;    //auv_no,good_no
@@ -43,6 +44,7 @@ public:
   MAP_INFO *mpstMap;
   private:
   int mhlow;
+  int minLoadWeight;
 };
 
 

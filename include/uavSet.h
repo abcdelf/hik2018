@@ -28,6 +28,7 @@ public:
   void plane_get(int plane_num,int high,int goods_no);
   pair<int, int> plane_search(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos);
   pair<int, int> plane_tran(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos);
+  pair<int, int> plane_trackEnemy(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos);
   void plane_put(int plane_num,int high);
   void set_newmatch(MATCH_STATUS * pstMatch);
   void printgoodnum(int goo_num);
