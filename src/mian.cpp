@@ -117,6 +117,7 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 // }
 int tpurchase=0;
 int large_value=0;
+int large_loadweight=0;
 int cheap_value=__INT_MAX__;
 int small_loadweight=__INT_MAX__;
 
@@ -130,6 +131,7 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
 
      int uav_work=0;
      int cheap_uav_flag=0;
+     int large_uav_flag=0;
      int average_loadweight=0;
      int num_weight=0;
 
@@ -177,6 +179,8 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
             uav_work++;//统计工作的飞机数量
             if(pstMatch->astWeUav[i].nLoadWeight==small_loadweight)//判断是否存在最低价值的飞机
                 cheap_uav_flag=1;
+            if(pstMatch->astWeUav[i].nLoadWeight==large_loadweight)//判断是否存在最低价值的飞机
+                large_uav_flag=1;
         }	
     }
         
@@ -280,10 +284,7 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
 
     pplane->planePathCorretion();
 
-    if(cheap_uav_flag==0)
-    {
 
-    }
     if((pstMatch->nWeValue >cheap_value) && ((uav_work)< (pstMap->nMapX/3))) 
     {
         if(!cheap_uav_flag)                                                                                         //我方没有价值最少的飞机
@@ -302,22 +303,25 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
                 }                     
                 
             }
+        }else if(!large_uav_flag)
+        {
+            for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+            {
+                if(pstMap->astUavPrice[i].nValue==large_value) 
+                {
+                    if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
+                    {		
+                        pstFlayPlane->nPurchaseNum = 1;
+                        strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+                        tpurchase = pstMatch->nTime;
+
+                    }
+                }                     
+                
+            }
         }else
         {
-            // for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
-            // {
-            //     if(pstMap->astUavPrice[i].nValue==cheap_value) 
-            //     {
-            //         if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
-            //         {		
-            //             pstFlayPlane->nPurchaseNum = 1;
-            //             strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
-            //             tpurchase = pstMatch->nTime;
 
-            //         }
-            //     }                     
-                
-            // }
             if(pstMatch->nWeValue >pstMap->astUavPrice[1].nValue)//如果金额足够，则购买
             {
                 pstFlayPlane->nPurchaseNum=1;
@@ -604,6 +608,9 @@ int main(int argc, char *argv[])
             large_value=pstMapInfo->astUavPrice[i].nValue;
         if(pstMapInfo->astUavPrice[i].nValue<cheap_value)
             cheap_value=pstMapInfo->astUavPrice[i].nValue;
+
+        if(pstMapInfo->astUavPrice[i].nLoadWeight>large_loadweight)
+            large_loadweight=pstMapInfo->astUavPrice[i].nLoadWeight;
         if(pstMapInfo->astUavPrice[i].nLoadWeight<small_loadweight)
             small_loadweight=pstMapInfo->astUavPrice[i].nLoadWeight;
     }
