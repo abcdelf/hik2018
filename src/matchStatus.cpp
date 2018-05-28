@@ -21,6 +21,8 @@ MATCHSTATUS::MATCHSTATUS(MAP_INFO *pstMap):mpstMap(pstMap)
 
   mhlow = pstMap->nHLow;
 
+  minLoadWeight = 20;
+
   for(int i=0;i<MAX_UAV_NUM;i++)
   {
     plane_goods.insert(make_pair(i, -1));
@@ -172,9 +174,47 @@ void MATCHSTATUS::auv_goods()
   
 int MATCHSTATUS::which_goods(int plane_num)
 {
-  printf(" plane_goods[mpstMatch->astWeUav[%d].nNO]:%d\n", mpstMatch->astWeUav[plane_num].nNO,plane_goods[mpstMatch->astWeUav[plane_num].nNO]);
+  //printf(" plane_goods[mpstMatch->astWeUav[%d].nNO]:%d\n", mpstMatch->astWeUav[plane_num].nNO,plane_goods[mpstMatch->astWeUav[plane_num].nNO]);
   return plane_goods[mpstMatch->astWeUav[plane_num].nNO];
 }
-  
+void MATCHSTATUS::search_enemy(void)
+{
+    int enemyId[100]={0};
+
+    for(int i=0; i<mpstMatch->nUavEnemyNum; i++)
+    {
+      int temp = mpstMatch->astEnemyUav[i].nLoadWeight;
+      if(temp == 100)
+      {
+        enemyId[0]=i;
+
+      }else if(temp == 50)
+      {
+        enemyId[1]=i;
+      }
+    }
+    for(int j=0, i=0; i<mpstMatch->nUavWeNum; i++)
+    {
+      int temp = mpstMatch->astWeUav[i].nLoadWeight;
+      if(temp==20)
+      {
+        enemyIdNum[i] = j;//enemyId[j];
+        j++;
+      }
+    }
+
+}
+int MATCHSTATUS::which_enemy(int plane_num)
+{
+  int enemyIdTemp=0;
+
+  if(plane_num<1000)
+  {
+    if(enemyIdNum[plane_num]< mpstMatch->nEnemyValue)
+      enemyIdTemp = enemyIdNum[plane_num];
+  }
+   
+  return enemyIdTemp;
+}
 
 

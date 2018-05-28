@@ -26,7 +26,8 @@ public:
   void set_newmatch(MATCH_STATUS * pstMatch);
   void auv_goods();
   int which_goods(int plane_num);
-
+  int which_enemy(int plane_num);
+  void search_enemy(void);
 public:
   enum auvstate
   {
@@ -45,6 +46,9 @@ public:
   private:
   int mhlow;
   int minLoadWeight;
+  
+  int enemyIdNum[1000];
+
 };
 
 

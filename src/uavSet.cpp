@@ -19,7 +19,14 @@ PLANE::PLANE()
 PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch):mmap(map),mpstFlayPlane(pstFlayPlane),mpathSearch(roadSearch)
 {
     for(int i=0;i<MAX_PLANE_NUM;i++)
-    PlanSetate.push_back(-1);
+      PlanSetate.push_back(-1);
+    for(int i=0; i<1000; i++)
+    {
+      enemyLastState[i].enemyId    = -1;
+      enemyLastState[i].goodsId    = -1;
+      enemyLastState[i].trackState = -1;
+      enemyLastState[i].coord      = make_pair(-1,-1);      
+    }
 }
 
 
@@ -405,88 +412,184 @@ FLAY_PLANE* PLANE::renew()
   return mpstFlayPlane;
 }
 
-pair<int, int> PLANE::plane_trackEnemy(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos)
+pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<int, int>> obstaclePos)
 {
   //plane_num 我方攻击机器的ID， enemy_id 敌方机器ID， 
   int uavX = mpstMatch->astWeUav[plane_num].nX;
   int uavY = mpstMatch->astWeUav[plane_num].nY;
   int uavZ = mpstMatch->astWeUav[plane_num].nZ;
 
-  if(goods_no==-1)
+  if(enemy_id<0)
     return make_pair(uavX,uavY);
-  int goods_num;
-  for(goods_num=0;goods_num<mpstMatch->nGoodsNum;goods_num++)
+  if(enemy_id> mpstMatch->nUavEnemyNum)
   {
-    if(goods_no==mpstMatch->astGoods[goods_num].nNO)
-      break;	  
+    return make_pair(uavX,uavY);
   }
+  int uavEnemyX = mpstMatch->astEnemyUav[enemy_id].nX;
+  int uavEnemyY = mpstMatch->astEnemyUav[enemy_id].nY;
+  int uavEnemyZ = mpstMatch->astEnemyUav[enemy_id].nZ;
 
-  int goodsXStart = mpstMatch->astGoods[goods_num].nEndX;
-  int goodsYStart = mpstMatch->astGoods[goods_num].nEndY;
+  int uavGoalX = uavX;//路径规划目标点
+  int uavGoalY = uavY;
 
-  printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
-  //mstar->findpath(uavX, uavY, uavZ, goodsXStart, goodsYStart,uavZ);
+  cout<< "enemyPlane="<<plane_num <<"enemy_id="<< enemy_id<<endl;
+  cout<< "enemyPlane="<<plane_num <<"enemy_id="<<"="<<uavEnemyX<<"="<<uavEnemyY<<endl;
 
-  vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(goodsXStart,goodsYStart),uavZ,obstaclePos);
+  if(mpstMatch->astEnemyUav[enemy_id].nStatus == 2)//敌方无人机在雾区
+  {
+    if(enemyLastState[plane_num].enemyId == enemy_id)
+    {
+      
+      uavGoalX = enemyLastState[plane_num].coord.first;
+      uavGoalY = enemyLastState[plane_num].coord.second;  
+    
+    }
+  }else if(mpstMatch->astEnemyUav[enemy_id].nStatus == 0)//敌方无人机可见
+  {
+    if(mpstMatch->astEnemyUav[enemy_id].nGoodsNo == -1)//敌方无人机未载货
+    {
+
+      uavGoalX = mpstMatch->astEnemyUav[enemy_id].nX;//路径规划目标点
+      uavGoalY = mpstMatch->astEnemyUav[enemy_id].nY; 
+      if(enemy_id<1000)
+      {
+        enemyLastState[plane_num].enemyId    = enemy_id;
+        enemyLastState[plane_num].goodsId    = -1;
+        enemyLastState[plane_num].trackState = -1;
+        enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
+      }
+     
+    }else{//敌方无人机已经载货
+
+      if(uavEnemyZ< mmap->getMinFlyHeight())//敌方无人机在最低线以下
+      {
+        if(uavEnemyX==uavX && uavEnemyY==uavY)//到达敌方无人机上方
+        {
+          mpstFlayPlane->astUav[plane_num].nY = uavY;//发送飞行数据
+          mpstFlayPlane->astUav[plane_num].nX = uavX;
+          if(uavZ>0)
+          {
+            uavZ--;
+          }
+          mpstFlayPlane->astUav[plane_num].nZ = uavZ;
+          
+          if(enemy_id<1000)
+          {
+            enemyLastState[plane_num].enemyId    = enemy_id;
+            enemyLastState[plane_num].goodsId    = -1;
+            enemyLastState[plane_num].trackState =  1;
+            enemyLastState[plane_num].coord      = make_pair(uavX,uavY);
+          }
+
+          return make_pair(uavX,uavY);
+          
+        }
+      }else{//敌方无人机在最低线以上
+        if( (enemyLastState[plane_num].goodsId == -1) || \
+            (enemyLastState[plane_num].enemyId != enemy_id) ||\
+            (enemyLastState[plane_num].goodsId >= mpstMatch->nGoodsNum)\
+          )//还未获取货物信息
+        {
+          for(int i=0; i< mpstMatch->nGoodsNum; i++)
+          {
+            if(mpstMatch->astGoods[i].nNO == mpstMatch->astEnemyUav[enemy_id].nGoodsNo)
+            {
+              uavGoalX = mpstMatch->astGoods[i].nEndX;
+              uavGoalY = mpstMatch->astGoods[i].nEndY;
+              if(enemy_id<1000)
+              {
+                enemyLastState[plane_num].enemyId    = enemy_id;
+                enemyLastState[plane_num].goodsId    = i;
+                enemyLastState[plane_num].trackState = -1;
+                enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
+              }
+
+              break;
+            }
+          }
+        }else{//已经有货物信息
+
+          uavGoalX = mpstMatch->astGoods[enemyLastState[plane_num].goodsId].nEndX;
+          uavGoalY = mpstMatch->astGoods[enemyLastState[plane_num].goodsId].nEndY;
+      
+          if(enemy_id< 1000)
+          {
+            enemyLastState[plane_num].enemyId    = enemy_id;
+            enemyLastState[plane_num].trackState = -1;
+            enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
+          }          
+
+        }
+
+      }      
+    }
+
+  }
+  
   int uavNextX=uavX;
   int uavNextY=uavY;
   int uavNextZ=uavZ;
-  if(path.size()>1)
-  {
-    auto p=path.begin();
-    
-    p++;
-    Node node = *p;
-    uavNextX = node.x;
-    uavNextY = node.y;
-    uavNextZ = uavZ;
-      
-  }else if(uavZ < mmap->getMaxFlyHeight()-1)
-  {
-    uavNextZ = uavZ+1;
 
-  }
-  printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
-  
-    if(uavNextZ<uavZ)
+  if(uavGoalX==uavX && uavGoalY==uavY)//到达坐标点
   {
-    if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
-    {    
-      uavNextX=uavX;
-      uavNextY=uavY;
-    }
-    else
+    if(mpstMatch->astEnemyUav[enemy_id].nStatus == 0)//敌方无人机可见
     {
-      int flag=0;
-      for(int i=-1;i<2;i++)
-      {	
-	for(int j=-1;j<2;j++)
-	{
-	  if(i==0&&j==0)
-	    continue;
-	  if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
-	  {
-	    uavNextX=uavX+i;
-	    uavNextY=uavY+j;
-	    uavNextY=uavZ;
-	    flag=1;
-	    break;
-	  }	 
-	}	
-	if(flag==1)
-	  break;
-      }	   
+      if(uavEnemyX==uavX && uavEnemyY==uavY)
+      {
+        if(uavEnemyZ< uavZ)//敌方无人机在下
+        {
+          if(uavNextZ>0)
+          {
+            uavNextZ--;
+          }
+        }else if(uavEnemyZ >uavZ){
+          if(uavNextZ< mmap->getMaxFlyHeight())
+          {
+            uavNextZ++;
+          }
+        }
+      }
+      
+    }else{
+
+    }
+   
+  }else{
+    if(uavZ< mmap->getMinFlyHeight())
+    {
+      uavNextZ++;
+    }else{
+      if(make_pair(uavX,uavY)!=make_pair(uavGoalX,uavGoalY))
+      {
+        vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(uavGoalX,uavGoalY),uavZ,obstaclePos);
+
+        if(path.size()>1)
+        {
+          auto p=path.begin();
+          
+          p++;
+          Node node = *p;
+          uavNextX = node.x;
+          uavNextY = node.y;
+          uavNextZ = uavZ;
+            
+        }else if(uavZ < mmap->getMaxFlyHeight())
+        {
+          uavNextZ = uavZ+1;
+        }
+      }
+      
     }
   }
 
-  //if(mstar->getPathSize()>1)
-  {
-    mpstFlayPlane->astUav[plane_num].nY = uavNextY;
-    mpstFlayPlane->astUav[plane_num].nX = uavNextX;
-    mpstFlayPlane->astUav[plane_num].nZ = uavNextZ;
-  }
+  mpstFlayPlane->astUav[plane_num].nY = uavNextY;
+  mpstFlayPlane->astUav[plane_num].nX = uavNextX;
+  mpstFlayPlane->astUav[plane_num].nZ = uavNextZ;
+  
   return  make_pair(uavNextX,uavNextY);
 }
+
+
 
 
   

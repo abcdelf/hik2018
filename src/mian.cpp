@@ -115,6 +115,11 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 // {
 
 // }
+int tpurchase=0;
+int large_value=0;
+int cheap_value=__INT_MAX__;
+int small_loadweight=__INT_MAX__;
+
 void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,PLANE* pplane,MATCHSTATUS *matchstatus)
 {
     vector<pair<int, int>> obstaclePos;
@@ -122,6 +127,11 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
     pair<int, int> tempCoord;
     obstaclePos.clear();
     staticPlanePos.clear();
+
+     int uav_work=0;
+     int cheap_uav_flag=0;
+     int average_loadweight=0;
+     int num_weight=0;
 
     // for(int i=0;i<pstMatch->nUavWeNum;i++)
     // {
@@ -136,57 +146,63 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
     matchstatus->set_newmatch(pstMatch);     
     
     //renew all uav status(by huang,25)
-    for(int i=0;i<pstMatch->nUavWeNum;i++)
+
+
+    
+    matchstatus->auv_goods();
+
+
+    //  compute_average load weight
+    for(int i=0;i< pstMatch->nGoodsNum;i++)
+    {
+        if(pstMatch->astGoods[i].nState==0)
+        {
+            average_loadweight+=pstMatch->astGoods[i].nWeight;
+            num_weight++;//可以被建起来的物体的数量
+        }
+    }
+    if(num_weight==0)
+        average_loadweight=0;
+    else
+        average_loadweight=average_loadweight/num_weight;
+        
+        
+    // for(int i=0;i<pstMatch->nUavWeNum;i++)
+    //     pstFlayPlane->astUav[i].nStatus=pstMatch->astWeUav[i].nStatus;        
+    for(int i=0;i< pstMatch->nUavWeNum; i++)
+    {
         pstFlayPlane->astUav[i].nStatus=pstMatch->astWeUav[i].nStatus;
+        if(pstMatch->astWeUav[i].nStatus==0)
+        {
+            uav_work++;//统计工作的飞机数量
+            if(pstMatch->astWeUav[i].nLoadWeight==small_loadweight)//判断是否存在最低价值的飞机
+                cheap_uav_flag=1;
+        }	
+    }
+        
+
+    if((tpurchase>0)&&(pstMatch->nTime  >tpurchase))
+    {   
+        pstFlayPlane->nPurchaseNum=0;
+        pstFlayPlane->nUavNum = pstMatch->nUavWeNum;
+        if(pstMatch->nTime>=tpurchase+1)
+        {
+            for(int i=0;i<pstMatch->nUavWeNum;i++)
+                pstFlayPlane->astUav[i] = pstMatch->astWeUav[i]; //复制飞机信息到 飞行结构体  
+        }
+
+        tpurchase=0;
+
+    }
+
 
     //end(by huang,25)
-    matchstatus->auv_goods();
-    //matchstatus->auv_goods();
-      
-      
+
+
+
+    //matchstatus->search_enemy();
       
 
-      
-/*      
-        matchstatus->JudWauvSta(0,matchstatus->which_goods(0));
-	if(matchstatus->mauvstate[0]==matchstatus->BACK_SEARCH)
-	{
-	  pplane->plane_up(0,mhlow+1,0);
-	  printf("back search......\n");
-	  return;
-	}
-	if(matchstatus->mauvstate[0]==matchstatus->SEARCH)
-	{
-	   pplane->plane_search(0, matchstatus->which_goods(0));
-	   printf("serching......\n");
-	   return;
-	}
-        if(matchstatus->mauvstate[0]==matchstatus->TO_GET)
-	{	 
-	  pplane->plane_get(0,0,matchstatus->which_goods(0));
-	   printf("to get......\n");
-	  return;
-	}
-        if(matchstatus->mauvstate[0]==matchstatus->BACK_TRANS)
-	{
-	  pplane->plane_up(0,mhlow+1,1);
-	  printf("back trans......\n");
-	   return;
-	}
-  	if(matchstatus->mauvstate[0]==matchstatus->TRANS)
-	{
-	   pplane->plane_tran(0, matchstatus->which_goods(0));
-	   printf("transing......\n");
-	   return;
-	}
-	if(matchstatus->mauvstate[0]==matchstatus->TO_PUT)
-	{
-	   pplane->plane_put(0,0);
-	   printf("to put......\n");
-	   return;
-	}
-
-	*/
     //  printf("%d ;start\r\n",pstMatch->nUavWeNum);
     for(int uavnum=0;uavnum< pstMatch->nUavWeNum;uavnum++)
     {
@@ -252,16 +268,146 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
             printf("to put......\n");	 
             break;
         case 6:
+
+            tempCoord = pplane->plane_trackEnemy(uavnum,0,obstaclePos);//matchstatus->which_enemy(uavnum)
+            if(tempCoord != make_pair(-1,-1))
+                obstaclePos.push_back(tempCoord);
             printf("to track......\n");	 
             
             break;
         }
       }
 
-      pplane->planePathCorretion();
+    pplane->planePathCorretion();
 
+    if(cheap_uav_flag==0)
+    {
 
+    }
+    if((pstMatch->nWeValue >cheap_value) && ((uav_work)< (pstMap->nMapX/3))) 
+    {
+        if(!cheap_uav_flag)                                                                                         //我方没有价值最少的飞机
+        {
+            for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+            {
+                if(pstMap->astUavPrice[i].nValue==cheap_value) 
+                {
+                    if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
+                    {		
+                        pstFlayPlane->nPurchaseNum = 1;
+                        strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+                        tpurchase = pstMatch->nTime;
 
+                    }
+                }                     
+                
+            }
+        }else
+        {
+            // for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+            // {
+            //     if(pstMap->astUavPrice[i].nValue==cheap_value) 
+            //     {
+            //         if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
+            //         {		
+            //             pstFlayPlane->nPurchaseNum = 1;
+            //             strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+            //             tpurchase = pstMatch->nTime;
+
+            //         }
+            //     }                     
+                
+            // }
+            if(pstMatch->nWeValue >pstMap->astUavPrice[1].nValue)//如果金额足够，则购买
+            {
+                pstFlayPlane->nPurchaseNum=1;
+                strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[1].szType);
+                tpurchase=pstMatch->nTime;
+            
+            }
+        }
+
+               
+    }
+
+    // purchase plane
+    //printf("uav_work:%d:,nMapX/3:%d\n",uav_work, pstMap->nMapX>>1);
+    // if((pstMatch->nWeValue >cheap_value) && ((uav_work)< (pstMap->nMapX/2)))
+    // {
+
+    //     if(!cheap_uav_flag)                                                                                         //我方没有价值最少的飞机
+    //     {
+    //         for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+    //         {
+    //             if(pstMap->astUavPrice[i].nValue==cheap_value) 
+    //             {
+    //                 if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
+    //                 {		
+    //                     pstFlayPlane->nPurchaseNum = 1;
+    //                     strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+    //                     tpurchase = pstMatch->nTime;
+
+    //                 }
+    //             }                     
+                
+    //         }
+    //     }else
+    //     {
+	//         int best_load=__INT_MAX__;
+	//         int second_load=__INT_MAX__;
+	//         if(num_weight==0)//num_weight = 可以被建起来的物体的数量
+	//             return;
+
+    //         for(int i=0;i< pstMap->nUavPriceNum;i++)
+    //         {
+    //             if(pstMap->astUavPrice[i].nLoadWeight>average_loadweight)  
+    //             {
+    //                 if(pstMap->astUavPrice[i].nLoadWeight<best_load)
+    //                 {
+    //                     int temp=best_load;
+    //                     best_load=pstMap->astUavPrice[i].nLoadWeight;  //更新大于平均重量的最小重量
+    //                     second_load=temp;                       //更新大于平均重量的次小重量
+    //                 }		
+    //             }
+    //         }
+            
+    //         int F_num=0; 
+    //         for(int j=0;j<pstMatch->nUavWeNum;j++)         //统计best_load的飞机的数量
+    //         {
+    //             if(best_load==pstMatch->astWeUav[j].nLoadWeight&&((pstMatch->astWeUav[j].nStatus==0)))
+    //                 F_num++;		
+    //         }
+	// //  printf("...................#######################best_load:%d,f_num:%d\n",best_load,F_num);
+	  
+	  
+    //         for(int i=0;i<pstMap->nUavPriceNum;i++)                                           //遍历可买飞机
+    //         {
+                
+    //             if(best_load==__INT_MAX__)
+    //                 break;
+                
+    //             if(F_num>(((pstMap->nMapX/2)/pstMap->nUavPriceNum)+1))      //如果该类型飞机数量多，考虑买大吨位的
+    //             {
+    //                 if(second_load==__INT_MAX__)
+    //                     break;
+    //                 else
+    //                     best_load=second_load;
+    //             }
+                
+    //             if(best_load==pstMap->astUavPrice[i].nLoadWeight)                        
+    //             { 
+    //                 if(pstMatch->nWeValue >pstMap->astUavPrice[i].nValue)//如果金额足够，则购买
+    //                 {
+    //                     pstFlayPlane->nPurchaseNum=1;
+    //                     strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+    //                     tpurchase=pstMatch->nTime;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+	//     }
+	
+    // }
 }
 
 
@@ -451,6 +597,19 @@ int main(int argc, char *argv[])
     mmhlow=pstMapInfo->nHLow;
     mmhhigh=pstMapInfo->nHHigh;
     //
+    //before purchase plane  
+    for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
+    {
+        if(pstMapInfo->astUavPrice[i].nValue>large_value)
+            large_value=pstMapInfo->astUavPrice[i].nValue;
+        if(pstMapInfo->astUavPrice[i].nValue<cheap_value)
+            cheap_value=pstMapInfo->astUavPrice[i].nValue;
+        if(pstMapInfo->astUavPrice[i].nLoadWeight<small_loadweight)
+            small_loadweight=pstMapInfo->astUavPrice[i].nLoadWeight;
+    }
+
+        printf("snValue:%5d,snValue:%5d,small_loadweight:%5d\n",large_value,cheap_value,small_loadweight);
+    //end    
     // 第一次把无人机的初始赋值给flayplane
     pstFlayPlane->nPurchaseNum = 0;
     pstFlayPlane->nUavNum = pstMapInfo->nUavNum;
