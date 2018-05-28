@@ -43,20 +43,20 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
       mauvstate[plane_num]=TRANS;
       if(mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nEndX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nEndY)
       {
-	mauvstate[plane_num]=TO_PUT;	
-	if(mpstMatch->astWeUav[plane_num].nZ==0)
-	  plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
+        mauvstate[plane_num]=TO_PUT;	
+        if(mpstMatch->astWeUav[plane_num].nZ==0)
+          plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
       }
     }
     else
     {
       if(mpstMatch->astGoods[goods_num].nState==1&&mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nStartX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nStartY)//nState表示被拾起
-	mauvstate[plane_num]=BACK_TRANS;
+	      mauvstate[plane_num]=BACK_TRANS;
       if(mpstMatch->astGoods[goods_num].nState==1&&mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nEndX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nEndY)//nState表示被拾起
       {
-	mauvstate[plane_num]=TO_PUT;	
-	if(mpstMatch->astWeUav[plane_num].nZ==0)
-	  plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
+        mauvstate[plane_num]=TO_PUT;	
+        if(mpstMatch->astWeUav[plane_num].nZ==0)
+          plane_goods[mpstMatch->astWeUav[plane_num].nNO]=-1;
       }
     }
   }
@@ -67,17 +67,17 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
       mauvstate[plane_num]=SEARCH;
       if(mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nStartX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nStartY)
       {
-	mauvstate[plane_num]=TO_GET;
+	      mauvstate[plane_num]=TO_GET;
       }   
     }
     else
     {
       if(mpstMatch->astGoods[goods_num].nState==0&&mpstMatch->astWeUav[plane_num].nX==mpstMatch->astGoods[goods_num].nStartX&&mpstMatch->astWeUav[plane_num].nY==mpstMatch->astGoods[goods_num].nStartY)//nState表示未被拾起
       {
-	mauvstate[plane_num]=TO_GET;
+	      mauvstate[plane_num]=TO_GET;
       }
       else
-	mauvstate[plane_num]=BACK_SEARCH;	
+      	mauvstate[plane_num]=BACK_SEARCH;	
     }
   }
 }

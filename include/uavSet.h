@@ -31,6 +31,7 @@ public:
   void plane_put(int plane_num,int high);
   void set_newmatch(MATCH_STATUS * pstMatch);
   void printgoodnum(int goo_num);
+  void planePathCorretion(void);
   FLAY_PLANE* renew();
 
 

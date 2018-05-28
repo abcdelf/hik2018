@@ -118,17 +118,19 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,PLANE* pplane,MATCHSTATUS *matchstatus)
 {
     vector<pair<int, int>> obstaclePos;
+    vector<pair<int, int>> staticPlanePos;
     pair<int, int> tempCoord;
     obstaclePos.clear();
+    staticPlanePos.clear();
 
-    for(int i=0;i<pstMatch->nUavWeNum;i++)
-    {
-        printf("%dth,auv num:%d,auv state:%d\n",i,pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i].nStatus);
-    };
-    for(int i=0;i<pstMatch->nGoodsNum;i++)
-    {
-        printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
-    };
+    // for(int i=0;i<pstMatch->nUavWeNum;i++)
+    // {
+    //     printf("%dth,auv num:%d,auv state:%d\n",i,pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i].nStatus);
+    // };
+    // for(int i=0;i<pstMatch->nGoodsNum;i++)
+    // {
+    //     printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
+    // };
      
     pplane->set_newmatch(pstMatch);
     matchstatus->set_newmatch(pstMatch);     
@@ -186,7 +188,7 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
 
 	*/
     //  printf("%d ;start\r\n",pstMatch->nUavWeNum);
-    for(int uavnum=0;uavnum<pstMatch->nUavWeNum;uavnum++)
+    for(int uavnum=0;uavnum< pstMatch->nUavWeNum;uavnum++)
     {
         // if(pstMatch->astWeUav[uavnum].nStatus==1)
         //     continue;
@@ -194,6 +196,26 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
 	
         int i=matchstatus->mauvstate[uavnum];
         
+
+        for(int uavReleaseNum=uavnum; uavReleaseNum< pstMatch->nUavWeNum; uavReleaseNum++)
+        {
+
+            if(pstMatch->astWeUav[uavReleaseNum].nStatus!=1)//飞机有效,添加障碍点
+            {
+                if(matchstatus->which_goods(uavReleaseNum)==-1)//没有货物，下一步保持原地
+                {
+                    if(pstMatch->astWeUav[uavReleaseNum].nZ >= pstMap->nHLow)
+                    {
+                        int uavX = pstMatch->astWeUav[uavReleaseNum].nX;
+                        int uavY = pstMatch->astWeUav[uavReleaseNum].nY;
+
+                        obstaclePos.push_back(make_pair(uavX,uavY));
+                    }
+                }
+
+            }
+        }
+       
         switch(i)
         {
         case 0:
@@ -202,7 +224,7 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
             break;
             
         case 1:
-            tempCoord = pplane->plane_search(uavnum, matchstatus->which_goods(uavnum),obstaclePos);
+            tempCoord = pplane->plane_search(uavnum, matchstatus->which_goods(uavnum),obstaclePos);//obstaclePos
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
             printf("serching......\n");
@@ -231,6 +253,10 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
             break;
         }
       }
+
+      pplane->planePathCorretion();
+
+
 
 }
 
@@ -495,7 +521,7 @@ int main(int argc, char *argv[])
             return nRet;
         }
 
-        printf("%s\n", pSendBuffer);
+        //printf("%s\n", pSendBuffer);
 
         // 接受当前比赛状态
         memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
