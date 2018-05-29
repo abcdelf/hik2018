@@ -26,6 +26,50 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
     flyMaxHeight =  mpstMap->nHHigh;
     flyMinHeight =  mpstMap->nHLow;
 
+    planeWeightNum = mpstMap->nUavPriceNum;
+
+    for(int i=0;i< planeWeightNum;i++)
+    {
+        planeWeight[i] = mpstMap->astUavPrice[i].nLoadWeight;
+
+        printf("i=%d;value=%5d;weight=%5d\n",i,mpstMap->astUavPrice[i].nValue,mpstMap->astUavPrice[i].nLoadWeight);
+    }
+
+    int n = planeWeightNum;
+    for (int i = 0; i<n - 1; i++) 
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            //如果前面的数比后面大，进行交换
+            if (planeWeight[j] > planeWeight[j + 1]) {
+                int temp = planeWeight[j]; 
+                planeWeight[j] = planeWeight[j + 1]; 
+                planeWeight[j + 1] = temp;
+            }
+        }
+    }  
+
+    for(int i=0;i<n;i++)
+    {
+        printf("weight=%d\n",planeWeight[i]);
+    }
+
+    for(int i=0;i< mpstMap->nUavPriceNum; i++)                                              
+    {
+        for(int j=0;j<mpstMap->nUavPriceNum; j++)
+        {
+            if(mpstMap->astUavPrice[j].nLoadWeight == getPlaneWeight(i)) 
+            {
+                planePrice[i] = mpstMap->astUavPrice[j].nValue;
+            }  
+        }  
+    }
+    for(int i=0;i<n;i++)
+    {
+        printf("planePrice=%d\n",planePrice[i]);
+    }
+
+    
     map.resize(map_z);  
     for (int i = 0; i < map_z; ++i) {  
         map[i].resize(map_y);  

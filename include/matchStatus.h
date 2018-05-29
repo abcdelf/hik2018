@@ -12,6 +12,7 @@
 #define MATCHSTATUS_H
 
 #include "include/CmdParse.h"
+#include "include/mapCreate.h"
 #include <vector>
 #include <map>
 
@@ -21,7 +22,7 @@ class MATCHSTATUS
 {
 public:
   MATCHSTATUS();
-  MATCHSTATUS(MAP_INFO *pstMap);
+  MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap);
   void JudWauvSta(int plane_num,int goods_no);//good_num=-1表示没有给无人机安排取货物认为
   void set_newmatch(MATCH_STATUS * pstMatch);
   void auv_goods();
@@ -43,6 +44,7 @@ public:
   map<int,int> plane_goods;    //auv_no,good_no
   MATCH_STATUS * mpstMatch;
   MAP_INFO *mpstMap;
+  MAP *mymap;
   private:
   int mhlow;
   int minLoadWeight;

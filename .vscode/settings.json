@@ -11,6 +11,8 @@
         "unordered_map": "cpp",
         "initializer_list": "cpp",
         "cmath": "cpp",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "*.tcc": "cpp",
+        "system_error": "cpp"
     }
 }

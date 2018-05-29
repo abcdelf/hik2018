@@ -9,19 +9,20 @@
  *	@warning	
  */
 #include "include/matchStatus.h"
+
 #include <iostream>
 
 MATCHSTATUS::MATCHSTATUS()
 {
  }
  
-MATCHSTATUS::MATCHSTATUS(MAP_INFO *pstMap):mpstMap(pstMap)
+MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):mymap(mmap),mpstMap(pstMap)
 {
   map<int, int>::iterator it;
 
   mhlow = pstMap->nHLow;
 
-  minLoadWeight = 20;
+  minLoadWeight = mymap->getPlaneWeight(0);
 
   for(int i=0;i<MAX_UAV_NUM;i++)
   {

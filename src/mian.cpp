@@ -120,17 +120,24 @@ int large_value=0;
 int large_loadweight=0;
 int cheap_value=__INT_MAX__;
 int small_loadweight=__INT_MAX__;
+typedef struct{
+    int weight;
+    int num;
+}planeClass_t;
+planeClass_t planeClassState[100]={0};
 
-void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,PLANE* pplane,MATCHSTATUS *matchstatus)
+void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
+                                PLANE* pplane,MATCHSTATUS *matchstatus, MAP* mmapcreate)
 {
     vector<pair<int, int>> obstaclePos;
-    vector<pair<int, int>> staticPlanePos;
+    vector<pair<int, int>> PlaneWeightNumState;
     pair<int, int> tempCoord;
     obstaclePos.clear();
-    staticPlanePos.clear();
+    PlaneWeightNumState.clear();
 
      int uav_work=0;
-     int cheap_uav_flag=0;
+     int uavCanWork=0;
+     int track_uav_num=0;
      int large_uav_flag=0;
      int average_loadweight=0;
      int num_weight=0;
@@ -160,13 +167,13 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
         if(pstMatch->astGoods[i].nState==0)
         {
             average_loadweight+=pstMatch->astGoods[i].nWeight;
-            num_weight++;//可以被建起来的物体的数量
+            num_weight++;//可以被检起来的物体的数量
         }
     }
     if(num_weight==0)
         average_loadweight=0;
     else
-        average_loadweight=average_loadweight/num_weight;
+        average_loadweight=average_loadweight/num_weight+1;
         
         
     // for(int i=0;i<pstMatch->nUavWeNum;i++)
@@ -177,15 +184,20 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
         if(pstMatch->astWeUav[i].nStatus==0)
         {
             uav_work++;//统计工作的飞机数量
-            if(pstMatch->astWeUav[i].nLoadWeight==small_loadweight)//判断是否存在最低价值的飞机
-                cheap_uav_flag=1;
-            if(pstMatch->astWeUav[i].nLoadWeight==large_loadweight)//判断是否存在最低价值的飞机
-                large_uav_flag=1;
+            if(pstMatch->astWeUav[i].nLoadWeight== mmapcreate->getMinPlaneWeight())//判断是否存在最低价值的飞机
+            {
+                track_uav_num++;//攻击机器的数量
+            }
+            if(pstMatch->astWeUav[i].nLoadWeight > average_loadweight)   
+            {
+                uavCanWork++;//可以捡起物体的飞机数量
+            }
+
         }	
     }
         
 
-    if((tpurchase>0)&&(pstMatch->nTime  >tpurchase))
+    if((tpurchase>0)&&(pstMatch->nTime  >tpurchase))//买完飞机，更新飞行计划结构体
     {   
         pstFlayPlane->nPurchaseNum=0;
         pstFlayPlane->nUavNum = pstMatch->nUavWeNum;
@@ -285,15 +297,17 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
     pplane->planePathCorretion();
 
 
-    if((pstMatch->nWeValue >cheap_value) && ((uav_work)< (pstMap->nMapX/3))) 
+    if( (pstMatch->nWeValue > mmapcreate->getPlanePrice(0)) && \
+        ((uav_work)< (pstMap->nMapX/3))&&\
+        (num_weight > uavCanWork)) 
     {
-        if(!cheap_uav_flag)                                                                                         //我方没有价值最少的飞机
+        if(track_uav_num <2)  //我方没有价值最少的飞机,攻击机器数量
         {
             for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
             {
-                if(pstMap->astUavPrice[i].nValue==cheap_value) 
+                if(pstMap->astUavPrice[i].nLoadWeight == mmapcreate->getMinPlaneWeight()) 
                 {
-                    if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
+                    if(pstMatch-> nWeValue>pstMap->astUavPrice[i].nValue)
                     {		
                         pstFlayPlane->nPurchaseNum = 1;
                         strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
@@ -303,32 +317,36 @@ void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PL
                 }                     
                 
             }
-        }else if(!large_uav_flag)
+        }else 
         {
-            for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+            int planeTemp=0;
+            for(int i=0; i< pstMap->nUavPriceNum; i++)
             {
-                if(pstMap->astUavPrice[i].nValue==large_value) 
+                if(mmapcreate->getPlaneWeight(i) > average_loadweight)
                 {
-                    if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
-                    {		
-                        pstFlayPlane->nPurchaseNum = 1;
-                        strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
-                        tpurchase = pstMatch->nTime;
-
-                    }
-                }                     
-                
+                    planeTemp = i;
+                    break;
+                }
             }
-        }else
-        {
-
-            if(pstMatch->nWeValue >pstMap->astUavPrice[1].nValue)//如果金额足够，则购买
+            int needGetPlanePrice = mmapcreate->getPlanePrice(planeTemp);
+            if(needGetPlanePrice >0)
             {
-                pstFlayPlane->nPurchaseNum=1;
-                strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[1].szType);
-                tpurchase=pstMatch->nTime;
-            
+                for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+                {
+                    if(pstMap->astUavPrice[i].nValue==needGetPlanePrice) 
+                    {
+                        if(pstMatch->nWeValue > pstMap->astUavPrice[i].nValue)
+                        {		
+                            pstFlayPlane->nPurchaseNum = 1;
+                            strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+                            tpurchase = pstMatch->nTime;
+
+                        }
+                    }                     
+                    
+                }
             }
+
         }
 
                
@@ -602,21 +620,26 @@ int main(int argc, char *argv[])
     mmhhigh=pstMapInfo->nHHigh;
     //
     //before purchase plane  
+
     for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
     {
-        if(pstMapInfo->astUavPrice[i].nValue>large_value)
+        if(pstMapInfo->astUavPrice[i].nValue> large_value)
             large_value=pstMapInfo->astUavPrice[i].nValue;
-        if(pstMapInfo->astUavPrice[i].nValue<cheap_value)
+
+        if(pstMapInfo->astUavPrice[i].nValue< cheap_value)
             cheap_value=pstMapInfo->astUavPrice[i].nValue;
 
         if(pstMapInfo->astUavPrice[i].nLoadWeight>large_loadweight)
             large_loadweight=pstMapInfo->astUavPrice[i].nLoadWeight;
         if(pstMapInfo->astUavPrice[i].nLoadWeight<small_loadweight)
             small_loadweight=pstMapInfo->astUavPrice[i].nLoadWeight;
+        
     }
 
-        printf("snValue:%5d,snValue:%5d,small_loadweight:%5d\n",large_value,cheap_value,small_loadweight);
+    printf("UavPriceNu=%5d,large_value:%5d,cheap_value:%5d,small_loadweight:%5d\n",pstMapInfo->nUavPriceNum,\
+            large_value,cheap_value,small_loadweight);
     //end    
+
     // 第一次把无人机的初始赋值给flayplane
     pstFlayPlane->nPurchaseNum = 0;
     pstFlayPlane->nUavNum = pstMapInfo->nUavNum;
@@ -629,49 +652,12 @@ int main(int argc, char *argv[])
     MAP* mymap=new MAP(pstMapInfo);
     mymap->map_build();//构建地图信息by hjw
 
-    //初始化
-    // int mmapDimension = max(mymap->getMapXsize(),mymap->getMapYsize());
-    // SquareGraph *mySquareGreph = new SquareGraph(mmapDimension);
-
-    // for(int n=0;n< mmhhigh-mmhlow+1;n++)
-    // {
-    //     for(int i = 0; i< mymap->getMapXsize();i++){
-    //         for(int j=0; j< mymap->getMapYsize(); j++){
-
-    //             char type = mymap->get_mappoint(i,j,mmhlow+n);
-    //             mySquareGreph->setCellValue(make_pair(i, j), type);
-    //         }
-    //     } //初始化最初的地图
-        
-    //     // vector<pair<int, int>> obstaclePos;
-    //     // obstaclePos.push_back(make_pair(1,1));
-    //     // obstaclePos.push_back(make_pair(1,2));
-
-    //     // mySquareGreph->setObstaclePos(obstaclePos);
-        
-    //     mySquareGreph->setFirstRobotPos(make_pair(0,0));
-    //     mySquareGreph->setSecondRobotPos(make_pair(mymap->getMapXsize()-1,mymap->getMapYsize()-1));
-    //     // mySquareGreph->setSecondRobotPos(make_pair(1,1));
-
-    //     vector<Node> path = mySquareGreph->executeAStar();
-    //     mySquareGreph->printPath(path);
-
-    //     // cout << "The total number of moves from distance to the target are : " << path.size() << endl;;
-    //     // cout << "You want to see the whole path to the target ? (y/n) " << endl;
-        
-    // }
-    // string response;
-    // cin >> response;
-
-    // delete mySquareGreph;
-
-
     pathSearch * mySearch = new pathSearch(mymap);
 
     PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch);
     //PLANE* myplane=new PLANE(pstMapInfo,pstFlayPlane,Astar);
   
-    MATCHSTATUS *matchstatus=new MATCHSTATUS(pstMapInfo);
+    MATCHSTATUS *matchstatus=new MATCHSTATUS(mymap,pstMapInfo);
 
     // 根据服务器指令，不停的接受发送数据
     while (1)
@@ -680,7 +666,7 @@ int main(int argc, char *argv[])
         if (pstMatchStatus->nTime != 0)
         {
            // printf("start/r/n");
-           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane,myplane,matchstatus);
+           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane,myplane,matchstatus, mymap);
             // AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane);
         }
 
