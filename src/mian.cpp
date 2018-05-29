@@ -151,11 +151,13 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     //     printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
     // };
      
-    matchstatus->wePlaneHomeInit();//初始化home点
+    
 
+    cout<<"5"<<endl;
     pplane->set_newmatch(pstMatch);
     matchstatus->set_newmatch(pstMatch);     
     
+    matchstatus->wePlaneHomeInit();//初始化home点
     //renew all uav status(by huang,25)
 
 
@@ -220,6 +222,8 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     matchstatus->search_enemy();
       
     enemyNumStateValue=0;
+    obstaclePos.push_back(make_pair(matchstatus->getHomeX(),matchstatus->getHomeY()));
+
     //  printf("%d ;start\r\n",pstMatch->nUavWeNum);
     for(int uavnum=0;uavnum< pstMatch->nUavWeNum;uavnum++)
     {
@@ -348,6 +352,7 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     //     }
     // }  
 
+    //pplane->plane_init();
     pplane->planePathCorretion();
 
 
@@ -632,12 +637,14 @@ int main(int argc, char *argv[])
     MAP* mymap=new MAP(pstMapInfo);
     mymap->map_build();//构建地图信息by hjw
 
+    cout<<"1"<<endl;
     pathSearch * mySearch = new pathSearch(mymap);
-
+    cout<<"2"<<endl;
     MATCHSTATUS *matchstatus=new MATCHSTATUS(mymap,pstMapInfo);
 
+    cout<<"3"<<endl;
     PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch,matchstatus);
-  
+    cout<<"4"<<endl;
     
 
     // 根据服务器指令，不停的接受发送数据

@@ -29,33 +29,111 @@ PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch ,MATCHSTAT
       enemyLastState[i].coord      = make_pair(-1,-1);      
     }
 }
-void PLANE::plane_init(int plane_num,int high,int flag)  //flag:0=back_search,flag=1:back_trans
+
+void PLANE::plane_init(void)  //flag:0=back_search,flag=1:back_trans
 {
-  if(mpstFlayPlane->astUav[plane_num].nZ< high)
-  {
-    for(int i;i< mpstFlayPlane->nUavNum;i++)
-    {
-      
-    }
-  }
 
-  int planeHeightNow = mpstMatch->astWeUav[plane_num].nZ;
+  int planeInHomeId[100];
+  int planeInHomeHeight[100];
 
-  for(int i=0; i< mpstMatch->nUavWeNum; i++)
+  int planeInHomeNum=0;
+  int maxHigh = mmap->getMaxFlyHeight();
+  int minHigh = mmap->getMinFlyHeight();
+
+  int planeNowMinHigh=maxHigh;
+
+  for(int i=0; i< mpstMatch->nUavWeNum; i++)//寻找下一步计划会路过家位置的飞机
   {
-    if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)
+    if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
     {
-      if(mpstMatch->astWeUav[i].nX == mmatchStatus->getHomeX()&&\
-         mpstMatch->astWeUav[i].nY == mmatchStatus->getHomeY())//i在家的位置上
+      if(mpstFlayPlane->astUav[i].nX == mmatchStatus->getHomeX()&&\
+         mpstFlayPlane->astUav[i].nY == mmatchStatus->getHomeY())//下一秒会出现在家的位置上 
       {
-        if(mpstFlayPlane->astUav[i].nZ)
+        if( mpstFlayPlane->astUav[i].nX != mpstMatch->astWeUav[i].nX ||\
+            mpstFlayPlane->astUav[i].nY != mpstMatch->astWeUav[i].nY)//飞机原来不在家的位置上
         {
-
+          planeInHomeId[planeInHomeNum]=i;//规划路过的飞机ID
+          planeInHomeNum++;
         }
+        // if(mpstFlayPlane->astUav[i].nZ >= mmap->getMinFlyHeight())
+        // {
+        //   planeInHomeId[planeInHomeNum]=i;
+        //   planeInHomeNum++;
+        // }
       }
     }
   }
-  mpstFlayPlane->astUav[plane_num].nGoodsNo=-1;
+  for(int j=0; j<planeInHomeNum; j++)
+  {
+    if(planeNowMinHigh > mpstFlayPlane->astUav[planeInHomeId[j]].nZ)
+    {
+      planeNowMinHigh = mpstFlayPlane->astUav[planeInHomeId[j]].nZ-1;//得到可以飞的最低高度
+    }
+  }
+
+  planeInHomeNum=0;
+  for(int i=0; i< mpstMatch->nUavWeNum; i++)//寻找家位置的飞机
+  {
+    if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
+    {
+      if(mpstMatch->astWeUav[i].nX == mmatchStatus->getHomeX()&&\
+         mpstMatch->astWeUav[i].nY == mmatchStatus->getHomeY()&&\
+         mpstMatch->astWeUav[i].nX == mpstFlayPlane->astUav[i].nX&&\
+         mpstMatch->astWeUav[i].nY == mpstFlayPlane->astUav[i].nY   )//原来就在家的位置上 
+      {
+        mpstFlayPlane->astUav[i].nGoodsNo=-1;
+        planeInHomeId[planeInHomeNum]=i;//在家位置上的飞机ID
+        planeInHomeHeight[planeInHomeNum] = mpstMatch->astWeUav[i].nZ;
+        planeInHomeNum++;//在家位置的飞机数量
+      }
+    }
+  }
+
+    int n = planeInHomeNum;
+    for (int i = 0; i<n - 1; i++) 
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            //如果前面的数比后面xiao，进行交换
+          if (planeInHomeHeight[j] < planeInHomeHeight[j + 1]) {
+              int temp = planeInHomeHeight[j]; 
+              planeInHomeHeight[j] = planeInHomeHeight[j + 1]; 
+              planeInHomeHeight[j + 1] = temp;
+          }
+        }
+    }  
+    for(int i=0;i<n;i++)
+    {
+        printf("planeInHomeHeight=%d\n",planeInHomeHeight[i]);
+    }
+  if(planeInHomeHeight[0]==0)
+  {
+    mpstFlayPlane->astUav[0].nZ++;
+  }else
+  {
+    for(int i=0; i<planeInHomeNum; i++)
+    {
+      
+      for(int j=0; j<planeInHomeNum; j++)
+      {
+        if(planeInHomeHeight[i] == mpstMatch->astWeUav[planeInHomeId[j]].nZ )
+        {
+          if(planeInHomeHeight[i]<planeNowMinHigh)
+          {
+            mpstFlayPlane->astUav[planeInHomeId[j]].nZ++;
+            planeNowMinHigh = mpstFlayPlane->astUav[planeInHomeId[j]].nZ;
+            cout<<planeInHomeId[j]<<";"<<mpstFlayPlane->astUav[planeInHomeId[j]].nZ<<endl;
+            break;
+          }
+        }
+        //if(mpstMatch->astWeUav[planeInHomeId[j]].nZ == )
+      }
+      //mpstMatch->astWeUav[planeInHomeId[j]].nZ
+    } 
+  }
+
+
+  
 }
 
 void PLANE::plane_up(int plane_num,int high,int flag)  //flag:0=back_search,flag=1:back_trans
@@ -168,36 +246,36 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
   printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
 
   
-  if(uavNextZ>uavZ)
-  {
-    if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
-    {    
-      uavNextX=uavX;
-      uavNextY=uavY;
-    }
-    else
-    {
-      int flag=0;
-      for(int i=-1;i<2;i++)
-      {	
-      	for(int j=-1;j<2;j++)
-      	{
-      	  if(i==0&&j==0)
-      	    continue;
-      	  if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
-      	  {
-      	    uavNextX=uavX+i;
-      	    uavNextY=uavY+j;
-      	    uavNextY=uavZ;
-      	    flag=1;
-      	    break;
-      	  }	 
-      	}	
-      	if(flag==1)
-      	  break;
-      }	   
-    }
-  }
+  // if(uavNextZ>uavZ)
+  // {
+  //   if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
+  //   {    
+  //     uavNextX=uavX;
+  //     uavNextY=uavY;
+  //   }
+  //   else
+  //   {
+  //     int flag=0;
+  //     for(int i=-1;i<2;i++)
+  //     {	
+  //     	for(int j=-1;j<2;j++)
+  //     	{
+  //     	  if(i==0&&j==0)
+  //     	    continue;
+  //     	  if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
+  //     	  {
+  //     	    uavNextX=uavX+i;
+  //     	    uavNextY=uavY+j;
+  //     	    uavNextY=uavZ;
+  //     	    flag=1;
+  //     	    break;
+  //     	  }	 
+  //     	}	
+  //     	if(flag==1)
+  //     	  break;
+  //     }	   
+  //   }
+  // }
     
   //if(mstar->getPathSize()>1)
   {
@@ -250,36 +328,36 @@ pair<int, int> PLANE::plane_tran(int plane_num,int goods_no, vector<pair<int, in
   }
   printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
   
-    if(uavNextZ<uavZ)
-  {
-    if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
-    {    
-      uavNextX=uavX;
-      uavNextY=uavY;
-    }
-    else
-    {
-      int flag=0;
-      for(int i=-1;i<2;i++)
-      {	
-	for(int j=-1;j<2;j++)
-	{
-	  if(i==0&&j==0)
-	    continue;
-	  if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
-	  {
-	    uavNextX=uavX+i;
-	    uavNextY=uavY+j;
-	    uavNextY=uavZ;
-	    flag=1;
-	    break;
-	  }	 
-	}	
-	if(flag==1)
-	  break;
-      }	   
-    }
-  }
+  //   if(uavNextZ<uavZ)
+  // {
+  //   if(mmap->get_mappoint (uavX,uavY, uavNextZ)==0)
+  //   {    
+  //     uavNextX=uavX;
+  //     uavNextY=uavY;
+  //   }
+  //   else
+  //   {
+  //     int flag=0;
+  //     for(int i=-1;i<2;i++)
+  //     {	
+	// for(int j=-1;j<2;j++)
+	// {
+	//   if(i==0&&j==0)
+	//     continue;
+	//   if(mmap->get_mappoint (uavX+i,uavY+j, uavZ)==0)
+	//   {
+	//     uavNextX=uavX+i;
+	//     uavNextY=uavY+j;
+	//     uavNextY=uavZ;
+	//     flag=1;
+	//     break;
+	//   }	 
+	// }	
+	// if(flag==1)
+	//   break;
+  //     }	   
+  //   }
+  // }
 
   //if(mstar->getPathSize()>1)
   {

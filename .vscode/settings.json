@@ -13,6 +13,7 @@
         "cmath": "cpp",
         "cstdlib": "cpp",
         "*.tcc": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "ostream": "cpp"
     }
 }

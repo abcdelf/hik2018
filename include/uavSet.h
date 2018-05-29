@@ -36,7 +36,7 @@ public:
   void planePathCorretion(void);
   FLAY_PLANE* renew();
 
-  void plane_init(int plane_num,int high,int flag) ;
+  void plane_init(void) ;
 
 private:
 

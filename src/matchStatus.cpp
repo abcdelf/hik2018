@@ -16,7 +16,8 @@ MATCHSTATUS::MATCHSTATUS()
 {
  }
  
-MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):mymap(mmap),mpstMap(pstMap)
+MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):\
+                          mymap(mmap),mpstMap(pstMap)
 {
   map<int, int>::iterator it;
 
@@ -40,6 +41,7 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
   int initState=0;
   if(isJustStart == -1)
   {
+    cout<<"6"<<endl;
     if(mpstMatch->nUavWeNum >=2 )
     {
       if( (mpstMatch->astWeUav[0].nX== mpstMatch->astWeUav[1].nX)&&\
@@ -47,6 +49,7 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
           (mpstMatch->astWeUav[0].nZ== mpstMatch->astWeUav[1].nZ)&&\
           (UAV_CRASH != mpstMatch->astWeUav[0].nStatus) && (mpstMatch->astWeUav[1].nStatus!=UAV_CRASH))
       {
+        cout<<"8"<<endl;
         initState=1;
       }
     }
@@ -55,22 +58,25 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
       isJustStart = 0;
       mapStartX = mpstMatch->astWeUav[0].nX;
       mapStartY = mpstMatch->astWeUav[0].nY;
+      cout<<"mapStartX="<<mapStartX<<" ; mapStartY="<<mapStartY<<endl;
     }
-      
+    cout<<"7"<<endl;  
   }
 }
 void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没有给无人机安排取货物认为
 {
   int goods_num;
 
-  if(mpstMatch->astWeUav[plane_num].nX == mapStartX&&\
-     mpstMatch->astWeUav[plane_num].nY == mapStartY)
-  {
-    if(mpstMatch->astWeUav[plane_num].nZ < mhlow)
-    {
-      mauvstate[plane_num]= PLANE_INIT;//飞机位置需要初始化
-    }
-  }
+  // if(mpstMatch->astWeUav[plane_num].nX == mapStartX&&\
+  //    mpstMatch->astWeUav[plane_num].nY == mapStartY)
+  // {
+  //   if(mpstMatch->astWeUav[plane_num].nZ < mhlow)
+  //   {
+  //     cout<<"inHome"<<endl;
+  //     mauvstate[plane_num]= PLANE_INIT;//飞机位置需要初始化
+  //     return;
+  //   }
+  // }
   for(goods_num=0;goods_num< mpstMatch->nGoodsNum;goods_num++)
   {
     if(goods_no==mpstMatch->astGoods[goods_num].nNO)
