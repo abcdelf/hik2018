@@ -16,7 +16,7 @@ FLAGS 			+= -DLINUX
 
 IFLAGS    =	-I$(INC_DIR)
 
-CFLAGS   		= $(IFLAGS) $(FLAGS) -Wall  -fPIC -fsigned-char 
+CFLAGS   		= $(IFLAGS) $(FLAGS) -Wall  -fPIC -fsigned-char -std=c++11
 
 
 vpath  			%.cpp		$(SRC_DIR)
