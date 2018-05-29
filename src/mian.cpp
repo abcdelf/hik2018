@@ -151,6 +151,8 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     //     printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
     // };
      
+    matchstatus->wePlaneHomeInit();//初始化home点
+
     pplane->set_newmatch(pstMatch);
     matchstatus->set_newmatch(pstMatch);     
     
@@ -289,6 +291,10 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                 obstaclePos.push_back(tempCoord);
             printf("to track......=%d\n",enemyNumStateValue);	 
             enemyNumStateValue++;
+            break;
+
+        case 7://PLANE_INIT
+            
             break;
         }
       }
@@ -628,10 +634,11 @@ int main(int argc, char *argv[])
 
     pathSearch * mySearch = new pathSearch(mymap);
 
-    PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch);
-    //PLANE* myplane=new PLANE(pstMapInfo,pstFlayPlane,Astar);
-  
     MATCHSTATUS *matchstatus=new MATCHSTATUS(mymap,pstMapInfo);
+
+    PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch,matchstatus);
+  
+    
 
     // 根据服务器指令，不停的接受发送数据
     while (1)

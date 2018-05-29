@@ -16,7 +16,8 @@ PLANE::PLANE()
 {
 }
 
-PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch):mmap(map),mpstFlayPlane(pstFlayPlane),mpathSearch(roadSearch)
+PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch ,MATCHSTATUS* matchstatus):\
+        mmap(map),mpstFlayPlane(pstFlayPlane),mpathSearch(roadSearch),mmatchStatus(matchstatus)
 {
     for(int i=0;i<MAX_PLANE_NUM;i++)
       PlanSetate.push_back(-1);
@@ -28,7 +29,34 @@ PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch):mmap(map)
       enemyLastState[i].coord      = make_pair(-1,-1);      
     }
 }
+void PLANE::plane_init(int plane_num,int high,int flag)  //flag:0=back_search,flag=1:back_trans
+{
+  if(mpstFlayPlane->astUav[plane_num].nZ< high)
+  {
+    for(int i;i< mpstFlayPlane->nUavNum;i++)
+    {
+      
+    }
+  }
 
+  int planeHeightNow = mpstMatch->astWeUav[plane_num].nZ;
+
+  for(int i=0; i< mpstMatch->nUavWeNum; i++)
+  {
+    if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)
+    {
+      if(mpstMatch->astWeUav[i].nX == mmatchStatus->getHomeX()&&\
+         mpstMatch->astWeUav[i].nY == mmatchStatus->getHomeY())//i在家的位置上
+      {
+        if(mpstFlayPlane->astUav[i].nZ)
+        {
+
+        }
+      }
+    }
+  }
+  mpstFlayPlane->astUav[plane_num].nGoodsNo=-1;
+}
 
 void PLANE::plane_up(int plane_num,int high,int flag)  //flag:0=back_search,flag=1:back_trans
 {

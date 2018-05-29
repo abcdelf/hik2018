@@ -29,6 +29,15 @@ public:
   int which_goods(int plane_num);
   int which_enemy(int plane_num);
   void search_enemy(void);
+  void wePlaneHomeInit(void);
+  int getHomeX(void)
+  {
+    return mapStartX;
+  };
+  int getHomeY(void)
+  {
+    return mapStartY;
+  };
 public:
   enum auvstate
   {
@@ -39,19 +48,25 @@ public:
     TRANS=4,      //向货物目标点搜索路径
     TO_PUT=5,     //到达货物目标点并向下去放置货物
     TO_EnemyUav=6,//追踪敌方无人机
+    PLANE_INIT=7, //初始化刚出生的无人机
   };
   vector<int> mauvstate;
   map<int,int> plane_goods;    //auv_no,good_no
   MATCH_STATUS * mpstMatch;
   MAP_INFO *mpstMap;
   MAP *mymap;
-  private:
+
+private:
   int mhlow;
   int minLoadWeight;
   
   int enemyNum;
   int enemyIdNum[1000];
 
+  int isJustStart;
+
+  int mapStartX;
+  int mapStartY;
 };
 
 

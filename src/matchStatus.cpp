@@ -24,6 +24,10 @@ MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):mymap(mmap),mpstMap(pstMap)
 
   minLoadWeight = mymap->getPlaneWeight(0);
 
+  isJustStart = -1;//第一次运行，还没有初始化本起飞位置
+  mapStartX = -1;
+  mapStartY = -1;
+
   for(int i=0;i<MAX_UAV_NUM;i++)
   {
     plane_goods.insert(make_pair(i, -1));
@@ -31,9 +35,42 @@ MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):mymap(mmap),mpstMap(pstMap)
   }
 }
 
+void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
+{
+  int initState=0;
+  if(isJustStart == -1)
+  {
+    if(mpstMatch->nUavWeNum >=2 )
+    {
+      if( (mpstMatch->astWeUav[0].nX== mpstMatch->astWeUav[1].nX)&&\
+          (mpstMatch->astWeUav[0].nY== mpstMatch->astWeUav[1].nY)&&\
+          (mpstMatch->astWeUav[0].nZ== mpstMatch->astWeUav[1].nZ)&&\
+          (UAV_CRASH != mpstMatch->astWeUav[0].nStatus) && (mpstMatch->astWeUav[1].nStatus!=UAV_CRASH))
+      {
+        initState=1;
+      }
+    }
+    if(initState==1)
+    {
+      isJustStart = 0;
+      mapStartX = mpstMatch->astWeUav[0].nX;
+      mapStartY = mpstMatch->astWeUav[0].nY;
+    }
+      
+  }
+}
 void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没有给无人机安排取货物认为
 {
   int goods_num;
+
+  if(mpstMatch->astWeUav[plane_num].nX == mapStartX&&\
+     mpstMatch->astWeUav[plane_num].nY == mapStartY)
+  {
+    if(mpstMatch->astWeUav[plane_num].nZ < mhlow)
+    {
+      mauvstate[plane_num]= PLANE_INIT;//飞机位置需要初始化
+    }
+  }
   for(goods_num=0;goods_num< mpstMatch->nGoodsNum;goods_num++)
   {
     if(goods_no==mpstMatch->astGoods[goods_num].nNO)
