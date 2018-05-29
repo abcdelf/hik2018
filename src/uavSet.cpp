@@ -50,11 +50,16 @@ void PLANE::plane_up(int plane_num,int high,int flag)  //flag:0=back_search,flag
         {
           if(i==plane_num)
             continue;
-          if((mpstFlayPlane->astUav[plane_num].nZ+1)==(mpstFlayPlane->astUav[i].nZ)&&(mpstFlayPlane->astUav[plane_num].nX)==(mpstFlayPlane->astUav[i].nX)&&(mpstFlayPlane->astUav[plane_num].nY)==(mpstFlayPlane->astUav[i].nY))
+          if(mpstFlayPlane->astUav[plane_num].nStatus == 0&&\
+            mpstMatch->astWeUav[i].nStatus ==0)
           {
-            step++;
-          // break;
+            if((mpstFlayPlane->astUav[plane_num].nZ+1)==(mpstFlayPlane->astUav[i].nZ)&&(mpstFlayPlane->astUav[plane_num].nX)==(mpstFlayPlane->astUav[i].nX)&&(mpstFlayPlane->astUav[plane_num].nY)==(mpstFlayPlane->astUav[i].nY))
+            {
+              step++;
+            // break;
+            }
           }
+
         }	
         if(!step)
           mpstFlayPlane->astUav[plane_num].nZ+=1;
@@ -432,8 +437,10 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
   int uavGoalX = uavX;//路径规划目标点
   int uavGoalY = uavY;
 
-  cout<< "enemyPlane="<<plane_num <<"enemy_id="<< enemy_id<<endl;
-  cout<< "enemyPlane="<<plane_num <<"enemy_id="<<"="<<uavEnemyX<<"="<<uavEnemyY<<endl;
+  cout<<"------------==--------------------"<<endl;
+  cout<<"-------00-----==----------------00--"<<endl;
+  cout<< "wePlane="<<plane_num <<"; enemy_id="<< enemy_id <<"  ;Weight= "<<mpstMatch->astEnemyUav[enemy_id].nLoadWeight <<endl;
+
 
   if(mpstMatch->astEnemyUav[enemy_id].nStatus == 2)//敌方无人机在雾区
   {

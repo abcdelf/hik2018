@@ -152,6 +152,7 @@ void MATCHSTATUS::auv_goods()
       if(distance_get<left_time)
       {
         float goodsWorth      = mpstMatch->astGoods[j].nValue;
+        //float goodsWeight     = mpstMatch->astGoods[j].nWeight;
         float distance        = distance_get+distance_put;
         float planeLoadWeight = mpstMatch->astWeUav[i].nLoadWeight;
         float percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);
@@ -180,42 +181,71 @@ int MATCHSTATUS::which_goods(int plane_num)
 }
 void MATCHSTATUS::search_enemy(void)
 {
-    int enemyId[100]={0};
 
+    int enemyWeight[100]={0};
+    
     for(int i=0; i<mpstMatch->nUavEnemyNum; i++)
     {
-      int temp = mpstMatch->astEnemyUav[i].nLoadWeight;
-      if(temp == 100)
-      {
-        enemyId[0]=i;
-
-      }else if(temp == 50)
-      {
-        enemyId[1]=i;
-      }
+       enemyWeight[i] = mpstMatch->astEnemyUav[i].nLoadWeight;
     }
-    for(int j=0, i=0; i<mpstMatch->nUavWeNum; i++)
+    
+    int n = mpstMatch->nUavEnemyNum;
+    for (int i = 0; i<n - 1; i++) 
     {
-      int temp = mpstMatch->astWeUav[i].nLoadWeight;
-      if(temp==20)
-      {
-        enemyIdNum[i] = j;//enemyId[j];
-        j++;
-      }
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            //如果前面的数比后面xiao，进行交换
+          if (enemyWeight[j] < enemyWeight[j + 1]) {
+              int temp = enemyWeight[j]; 
+              enemyWeight[j] = enemyWeight[j + 1]; 
+              enemyWeight[j + 1] = temp;
+          }
+        }
+    }  
+    for(int i=0;i<n;i++)
+    {
+        printf("enemyWeight=%d\n",enemyWeight[i]);
     }
+
+    enemyIdNum[0]=-1;
+    int j=0;
+    if(mpstMatch->nUavEnemyNum >=2)
+    {
+      for(int i=0 ; i <mpstMatch->nUavEnemyNum; i++)
+      {
+        if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[1])
+        {
+          enemyIdNum[j]=i;
+          j++;
+        }
+      }
+    }else if(mpstMatch->nUavEnemyNum >=1){
+      enemyIdNum[j] = 0;
+      j++;
+    }
+    enemyIdNum[j] = -1;
+    enemyNum = j;
+
 
 }
 int MATCHSTATUS::which_enemy(int plane_num)
 {
-  int enemyIdTemp=0;
-
-  if(plane_num<1000)
+  cout<<"******************"<<endl;
+  cout<< "enemyNum="<<enemyNum <<"; planeNum="<<plane_num<<endl;
+  cout<< "enemyIdNum[plane_num]="<<enemyIdNum[plane_num] <<endl;
+  if(plane_num < enemyNum)
   {
-    if(enemyIdNum[plane_num]< mpstMatch->nEnemyValue)
-      enemyIdTemp = enemyIdNum[plane_num];
+    if(enemyIdNum[plane_num] !=-1)
+    {
+      if(enemyIdNum[plane_num]< mpstMatch->nUavEnemyNum)
+        return enemyIdNum[plane_num];
+    }
+
+  }else{
+
   }
-   
-  return enemyIdTemp;
+
+  return 0;
 }
 
 

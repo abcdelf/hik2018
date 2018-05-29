@@ -48,7 +48,7 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
             }
         }
     }  
-
+    
     for(int i=0;i<n;i++)
     {
         printf("weight=%d\n",planeWeight[i]);

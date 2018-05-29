@@ -141,7 +141,7 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
      int large_uav_flag=0;
      int average_loadweight=0;
      int num_weight=0;
-
+    int enemyNumStateValue=0;
     // for(int i=0;i<pstMatch->nUavWeNum;i++)
     // {
     //     printf("%dth,auv num:%d,auv state:%d\n",i,pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i].nStatus);
@@ -175,12 +175,11 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     else
         average_loadweight=average_loadweight/num_weight+1;
         
-        
-    // for(int i=0;i<pstMatch->nUavWeNum;i++)
-    //     pstFlayPlane->astUav[i].nStatus=pstMatch->astWeUav[i].nStatus;        
+    
+
     for(int i=0;i< pstMatch->nUavWeNum; i++)
     {
-        pstFlayPlane->astUav[i].nStatus=pstMatch->astWeUav[i].nStatus;
+        pstFlayPlane->astUav[i].nStatus=pstMatch->astWeUav[i].nStatus;//更新飞机状态
         if(pstMatch->astWeUav[i].nStatus==0)
         {
             uav_work++;//统计工作的飞机数量
@@ -216,9 +215,9 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
 
 
 
-    //matchstatus->search_enemy();
+    matchstatus->search_enemy();
       
-
+    enemyNumStateValue=0;
     //  printf("%d ;start\r\n",pstMatch->nUavWeNum);
     for(int uavnum=0;uavnum< pstMatch->nUavWeNum;uavnum++)
     {
@@ -251,7 +250,7 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
         switch(i)
         {
         case 0:
-            pplane->plane_up(uavnum,mmhlow+1,0);
+            pplane->plane_up(uavnum,mmhlow+1,0);//mmhlow+1 mmhhigh
             printf("back search......\n");
             break;
             
@@ -285,21 +284,69 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
             break;
         case 6:
 
-            tempCoord = pplane->plane_trackEnemy(uavnum,0,obstaclePos);//matchstatus->which_enemy(uavnum)
+            tempCoord = pplane->plane_trackEnemy(uavnum,matchstatus->which_enemy(enemyNumStateValue),obstaclePos);//matchstatus->which_enemy(uavnum)
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
-            printf("to track......\n");	 
-            
+            printf("to track......=%d\n",enemyNumStateValue);	 
+            enemyNumStateValue++;
             break;
         }
       }
+
+    // for(int i=0; i<pstMatch->nUavWeNum;i++)
+    // {
+    //     if( (pstMatch->astWeUav[i].nX==pstMap->astUav[0].nX)&&\
+    //         (pstMatch->astWeUav[i].nY==pstMap->astUav[0].nY)&&(pstMatch->astWeUav[i].nZ==mmhlow))
+    //     { 
+    //         int flag_mn=0;
+
+    //         for(int m=-1;m<2;m++)
+    //         {
+    //         if((pstMap->astUav[0].nX+m<0)||((pstMap->astUav[0].nX+m)>(pstMap->nMapX-1)))//判断x是否超出边界
+    //         continue;;
+    //         for(int n=-1;n<2;n++)
+    //         {
+    //         if((pstMap->astUav[0].nY+n<0)||((pstMap->astUav[0].nY+n)>(pstMap->nMapY-1)))//判断y是否超出边界
+    //             continue;		
+    //                 int flag2=0;
+    //             for(int k=0;k<pstMatch->nUavWeNum;k++)
+    //             {
+    //                 if(pstMatch->astWeUav[k].nStatus!=0)
+    //                     continue;
+    //                 if( (pstMap->astUav[0].nX+m)==pstMatch->astWeUav[k].nX&&\
+    //                     (pstMap->astUav[0].nY+n)==pstMatch->astWeUav[k].nY&&pstMatch->astWeUav[k].nZ==mmhlow)
+    //                 {
+    //                     flag2=1;
+    //                     break;
+    //                 }
+    //                 if(pplane->mmap->get_mappoint(pstMap->astUav[0].nX+m,pstMap->astUav[0].nY+n,mmhlow))
+    //                 {
+    //                     flag2=1;
+    //                     break;					  
+    //                 }
+    //             }	
+    //             if( flag2==0)
+    //             {
+    //                 pstFlayPlane->astUav[i].nX=pstMap->astUav[0].nX+m;
+    //                 pstFlayPlane->astUav[i].nY=pstMap->astUav[0].nY+n;
+    //                 flag_mn=1;
+    //                 break;
+    //                 }
+
+    //             if(flag_mn==1)
+    //             break;
+    //         }
+    //             if(flag_mn==1)
+    //         break;
+    //         }
+    //     }
+    // }  
 
     pplane->planePathCorretion();
 
 
     if( (pstMatch->nWeValue > mmapcreate->getPlanePrice(0)) && \
-        ((uav_work)< (pstMap->nMapX/3))&&\
-        (num_weight > uavCanWork)) 
+        ((uav_work)< (pstMap->nMapX/3))) 
     {
         if(track_uav_num <2)  //我方没有价值最少的飞机,攻击机器数量
         {
@@ -317,7 +364,7 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                 }                     
                 
             }
-        }else 
+        }else if( num_weight/2 > uavCanWork)
         {
             int planeTemp=0;
             for(int i=0; i< pstMap->nUavPriceNum; i++)
@@ -328,6 +375,9 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                     break;
                 }
             }
+
+            // int needBuyPlaneClass = pstMap->nUavPriceNum - planeTemp;
+            // (mmapcreate->getPlaneWeight(planeTemp);
             int needGetPlanePrice = mmapcreate->getPlanePrice(planeTemp);
             if(needGetPlanePrice >0)
             {
@@ -352,84 +402,8 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                
     }
 
-    // purchase plane
-    //printf("uav_work:%d:,nMapX/3:%d\n",uav_work, pstMap->nMapX>>1);
-    // if((pstMatch->nWeValue >cheap_value) && ((uav_work)< (pstMap->nMapX/2)))
-    // {
+  
 
-    //     if(!cheap_uav_flag)                                                                                         //我方没有价值最少的飞机
-    //     {
-    //         for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
-    //         {
-    //             if(pstMap->astUavPrice[i].nValue==cheap_value) 
-    //             {
-    //                 if(pstMatch->nWeValue>pstMap->astUavPrice[i].nValue)
-    //                 {		
-    //                     pstFlayPlane->nPurchaseNum = 1;
-    //                     strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
-    //                     tpurchase = pstMatch->nTime;
-
-    //                 }
-    //             }                     
-                
-    //         }
-    //     }else
-    //     {
-	//         int best_load=__INT_MAX__;
-	//         int second_load=__INT_MAX__;
-	//         if(num_weight==0)//num_weight = 可以被建起来的物体的数量
-	//             return;
-
-    //         for(int i=0;i< pstMap->nUavPriceNum;i++)
-    //         {
-    //             if(pstMap->astUavPrice[i].nLoadWeight>average_loadweight)  
-    //             {
-    //                 if(pstMap->astUavPrice[i].nLoadWeight<best_load)
-    //                 {
-    //                     int temp=best_load;
-    //                     best_load=pstMap->astUavPrice[i].nLoadWeight;  //更新大于平均重量的最小重量
-    //                     second_load=temp;                       //更新大于平均重量的次小重量
-    //                 }		
-    //             }
-    //         }
-            
-    //         int F_num=0; 
-    //         for(int j=0;j<pstMatch->nUavWeNum;j++)         //统计best_load的飞机的数量
-    //         {
-    //             if(best_load==pstMatch->astWeUav[j].nLoadWeight&&((pstMatch->astWeUav[j].nStatus==0)))
-    //                 F_num++;		
-    //         }
-	// //  printf("...................#######################best_load:%d,f_num:%d\n",best_load,F_num);
-	  
-	  
-    //         for(int i=0;i<pstMap->nUavPriceNum;i++)                                           //遍历可买飞机
-    //         {
-                
-    //             if(best_load==__INT_MAX__)
-    //                 break;
-                
-    //             if(F_num>(((pstMap->nMapX/2)/pstMap->nUavPriceNum)+1))      //如果该类型飞机数量多，考虑买大吨位的
-    //             {
-    //                 if(second_load==__INT_MAX__)
-    //                     break;
-    //                 else
-    //                     best_load=second_load;
-    //             }
-                
-    //             if(best_load==pstMap->astUavPrice[i].nLoadWeight)                        
-    //             { 
-    //                 if(pstMatch->nWeValue >pstMap->astUavPrice[i].nValue)//如果金额足够，则购买
-    //                 {
-    //                     pstFlayPlane->nPurchaseNum=1;
-    //                     strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
-    //                     tpurchase=pstMatch->nTime;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-	//     }
-	
-    // }
 }
 
 
