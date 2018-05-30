@@ -289,11 +289,8 @@ int MATCHSTATUS::which_enemy(int plane_num)
   {
     if(enemyIdNum[plane_num] !=-1)
     {
-      if(enemyIdNum[plane_num]< mpstMatch->nUavEnemyNum)
         return enemyIdNum[plane_num];
     }
-
-  }else{
 
   }
 
