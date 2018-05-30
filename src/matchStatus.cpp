@@ -271,20 +271,24 @@ void MATCHSTATUS::search_enemy(void)
     }
 
     int j=0;
-    if(mpstMatch->nUavEnemyNum >=2)
+    if(ourTracePlane>0)
     {
-      for(int i=0 ; i <mpstMatch->nUavEnemyNum; i++)
+      if(mpstMatch->nUavEnemyNum >=2)
       {
-        if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[ourTracePlane])
+        for(int i=0 ; i <mpstMatch->nUavEnemyNum; i++)
         {
-          enemyIdNum[j]=i;
-          j++;
+          if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[ourTracePlane-1])
+          {
+            enemyIdNum[j]=i;
+            j++;
+          }
         }
+      }else if(mpstMatch->nUavEnemyNum >=1){
+        enemyIdNum[j] = 0;
+        j++;
       }
-    }else if(mpstMatch->nUavEnemyNum >=1){
-      enemyIdNum[j] = 0;
-      j++;
     }
+    
     enemyIdNum[j] = -1;
     enemyNum = j;
 
