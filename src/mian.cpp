@@ -623,14 +623,14 @@ int main(int argc, char *argv[])
     MAP* mymap=new MAP(pstMapInfo);
     mymap->map_build();//构建地图信息by hjw
 
-    cout<<"1"<<endl;
+    cout<<"1,";
     pathSearch * mySearch = new pathSearch(mymap);
-    cout<<"2"<<endl;
+    cout<<"2,";
     MATCHSTATUS *matchstatus=new MATCHSTATUS(mymap,pstMapInfo);
 
-    cout<<"3"<<endl;
+    cout<<"3,";
     PLANE* myplane=new PLANE(mymap,pstFlayPlane,mySearch,matchstatus);
-    cout<<"4"<<endl;
+    cout<<"4,";
     
 
     // 根据服务器指令，不停的接受发送数据
