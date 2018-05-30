@@ -32,7 +32,7 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
     {
         planeWeight[i] = mpstMap->astUavPrice[i].nLoadWeight;
 
-        printf("i=%d;value=%5d;weight=%5d\n",i,mpstMap->astUavPrice[i].nValue,mpstMap->astUavPrice[i].nLoadWeight);
+        //printf("i=%d;value=%5d;weight=%5d\n",i,mpstMap->astUavPrice[i].nValue,mpstMap->astUavPrice[i].nLoadWeight);
     }
 
     int n = planeWeightNum;
@@ -49,10 +49,10 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
         }
     }  
     
-    for(int i=0;i<n;i++)
-    {
-        printf("weight=%d\n",planeWeight[i]);
-    }
+    // for(int i=0;i<n;i++)
+    // {
+    //     printf("weight=%d\n",planeWeight[i]);
+    // }
 
     for(int i=0;i< mpstMap->nUavPriceNum; i++)                                              
     {
@@ -64,10 +64,10 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
             }  
         }  
     }
-    for(int i=0;i<n;i++)
-    {
-        printf("planePrice=%d\n",planePrice[i]);
-    }
+    // for(int i=0;i<n;i++)
+    // {
+    //     printf("planePrice=%d\n",planePrice[i]);
+    // }
 
     
     map.resize(map_z);  

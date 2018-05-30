@@ -323,7 +323,7 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
       return make_pair(uavX,uavY);
     }
   }
-  printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
+  //printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
   //mstar->findpath(uavX, uavY, uavZ, goodsXStart, goodsYStart,uavZ);
   vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(goodsXStart,goodsYStart),uavZ,obstaclePos);
   int uavNextX=uavX;
@@ -347,7 +347,7 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
     uavNextZ = uavZ+1;
 
   }
-  printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
+  //printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
 
   
   // if(uavNextZ>uavZ)
@@ -408,7 +408,7 @@ pair<int, int> PLANE::plane_tran(int plane_num,int goods_no, vector<pair<int, in
   int goodsXStart = mpstMatch->astGoods[goods_num].nEndX;
   int goodsYStart = mpstMatch->astGoods[goods_num].nEndY;
 
-  printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
+  //printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
   //mstar->findpath(uavX, uavY, uavZ, goodsXStart, goodsYStart,uavZ);
 
   vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(goodsXStart,goodsYStart),uavZ,obstaclePos);
@@ -430,7 +430,7 @@ pair<int, int> PLANE::plane_tran(int plane_num,int goods_no, vector<pair<int, in
     uavNextZ = uavZ+1;
 
   }
-  printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
+  //printf("uavNextX=%3d,uavNextY=%3d,uavNextZ=%3d\r\n",uavNextX,uavNextY,uavNextZ);
   
   //   if(uavNextZ<uavZ)
   // {

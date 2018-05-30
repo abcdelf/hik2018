@@ -130,6 +130,7 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
       else
       	mauvstate[plane_num]=BACK_SEARCH;	
 
+      
       if(mpstMatch->astWeUav[plane_num].nX != mapStartX&&\
          mpstMatch->astWeUav[plane_num].nY != mapStartY)//飞机不在坐标原点上
       {
@@ -222,7 +223,7 @@ void MATCHSTATUS::auv_goods()
     if(bestPercentWorth==0&&best_goosnum==0)
       continue;
     plane_goods[mpstMatch->astWeUav[i].nNO] = mpstMatch->astGoods[best_goosnum].nNO;
-    printf("%dplane,bestPercentWorth%f,best_goosnum:%d,\n",i,bestPercentWorth,best_goosnum);
+    //printf("%dplane,bestPercentWorth%f,best_goosnum:%d,\n",i,bestPercentWorth,best_goosnum);
   }
 }
   

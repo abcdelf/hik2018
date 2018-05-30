@@ -253,50 +253,50 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
         switch(i)
         {
         case 0:
-            printf("in back search......\n");
+            //printf("in back search......\n");
             pplane->plane_up(uavnum,mmhlow+1,0);//mmhlow+1 mmhhigh
-            printf("back search......\n");
+            //printf("back search......\n");
             break;
             
         case 1:
-            printf("in serching......\n");
+            //printf("in serching......\n");
             tempCoord = pplane->plane_search(uavnum, matchstatus->which_goods(uavnum),obstaclePos);//obstaclePos
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
-            printf("serching......\n");
+            //printf("serching......\n");
             break;
             
         case 2:
-            printf("in to get......\n");
+            //printf("in to get......\n");
             pplane->plane_get(uavnum,0,matchstatus->which_goods(uavnum));
-            printf("to get......\n");
+           // printf("to get......\n");
             break;
             
         case 3:
-            printf("in back trans......\n");
+            //printf("in back trans......\n");
             pplane->plane_up(uavnum,mmhlow+1,1);
-            printf("back trans......\n");
+            //printf("back trans......\n");
             break;
             
         case 4:
-            printf("in transing......\n");
+            //printf("in transing......\n");
             tempCoord = pplane->plane_tran(uavnum, matchstatus->which_goods(uavnum),obstaclePos);
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
-            printf("transing......\n");
+            //printf("transing......\n");
             break;
             
         case 5:
-            printf("in to put......\n");	
+           // printf("in to put......\n");	
             pplane->plane_put(uavnum,0);
-            printf("to put......\n");	 
+           // printf("to put......\n");	 
             break;
         case 6:
-            printf("in to track......=%d\n",enemyNumStateValue);	
+           // printf("in to track......=%d\n",enemyNumStateValue);	
             tempCoord = pplane->plane_trackEnemy(uavnum,matchstatus->which_enemy(enemyNumStateValue),obstaclePos);//matchstatus->which_enemy(uavnum)
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
-            printf("to track......=%d\n",enemyNumStateValue);	 
+           // printf("to track......=%d\n",enemyNumStateValue);	 
             enemyNumStateValue++;
             break;
 
