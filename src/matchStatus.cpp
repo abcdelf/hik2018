@@ -233,7 +233,7 @@ int MATCHSTATUS::which_goods(int plane_num)
 }
 void MATCHSTATUS::search_enemy(void)
 {
-    
+
     int enemyWeight[100]={0};
     
     for(int i=0; i<mpstMatch->nUavEnemyNum; i++)
@@ -254,20 +254,29 @@ void MATCHSTATUS::search_enemy(void)
           }
         }
     }  
-    for(int i=0;i<n;i++)
-    {
-        printf("enemyWeight=%d\n",enemyWeight[i]);
-    }
+    // for(int i=0;i<n;i++)
+    // {
+    //     printf("enemyWeight=%d\n",enemyWeight[i]);
+    // }
 
     enemyIdNum[0]=-1;
+    int ourTracePlane=0;
+    for(int ii=0;ii< mpstMatch->nUavWeNum; ii++)
+    {
+      if(mpstMatch->astWeUav[ii].nLoadWeight == mymap->getMinPlaneWeight())
+      {
+        ourTracePlane++;
+      }
+    }
+
     int j=0;
     if(mpstMatch->nUavEnemyNum >=2)
     {
       for(int i=0 ; i <mpstMatch->nUavEnemyNum; i++)
       {
-        if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[1])
+        if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[ourTracePlane])
         {
-          enemyIdNum[j]=mpstMatch->astEnemyUav[i].nNO;
+          enemyIdNum[j]=i;
           j++;
         }
       }
@@ -282,15 +291,18 @@ void MATCHSTATUS::search_enemy(void)
 }
 int MATCHSTATUS::which_enemy(int plane_num)
 {
-  cout<<"******************"<<endl;
-  cout<< "enemyNum="<<enemyNum <<"; planeNum="<<plane_num<<endl;
-  cout<< "enemyIdNum[plane_num]="<<enemyIdNum[plane_num] <<endl;
+//   cout<<"******************"<<endl;
+//   cout<< "enemyNum="<<enemyNum <<"; planeNum="<<plane_num<<endl;
+//   cout<< "enemyIdNum[plane_num]="<<enemyIdNum[plane_num] <<endl;
   if(plane_num < enemyNum)
   {
     if(enemyIdNum[plane_num] !=-1)
     {
+      if(enemyIdNum[plane_num]< mpstMatch->nUavEnemyNum)
         return enemyIdNum[plane_num];
     }
+
+  }else{
 
   }
 

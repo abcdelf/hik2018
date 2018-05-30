@@ -627,27 +627,18 @@ FLAY_PLANE* PLANE::renew()
   return mpstFlayPlane;
 }
 
-pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<int, int>> obstaclePos)
+pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<int, int>> obstaclePos)
 {
   //plane_num 我方攻击机器的ID， enemy_id 敌方机器ID， 
   int uavX = mpstMatch->astWeUav[plane_num].nX;
   int uavY = mpstMatch->astWeUav[plane_num].nY;
   int uavZ = mpstMatch->astWeUav[plane_num].nZ;
 
-  if(menemyid<0)
+  if(enemy_id<0)
     return make_pair(uavX,uavY);
-  // if(enemy_id> mpstMatch->nUavEnemyNum)
-  // {
-  //   return make_pair(uavX,uavY);
-  // }
-  int enemy_id=0;
-  for(int i=0; i< mpstMatch->nUavEnemyNum;i++)
+  if(enemy_id> mpstMatch->nUavEnemyNum)
   {
-    if(mpstMatch->astEnemyUav[i].nNO == menemyid)
-    {
-      enemy_id=i;
-      break;
-    }
+    return make_pair(uavX,uavY);
   }
   int uavEnemyX = mpstMatch->astEnemyUav[enemy_id].nX;
   int uavEnemyY = mpstMatch->astEnemyUav[enemy_id].nY;
@@ -663,7 +654,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
 
   if(mpstMatch->astEnemyUav[enemy_id].nStatus == UAV_FOG)//敌方无人机在雾区
   {
-    if(enemyLastState[plane_num].enemyId == menemyid)
+    if(enemyLastState[plane_num].enemyId == enemy_id)
     {
       
       uavGoalX = enemyLastState[plane_num].coord.first;
@@ -679,7 +670,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
       uavGoalY = mpstMatch->astEnemyUav[enemy_id].nY; 
       if(enemy_id<1000)
       {
-        enemyLastState[plane_num].enemyId    = menemyid;
+        enemyLastState[plane_num].enemyId    = enemy_id;
         enemyLastState[plane_num].goodsId    = -1;
         enemyLastState[plane_num].trackState = -1;
         enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
@@ -701,7 +692,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
           
           if(enemy_id<1000)
           {
-            enemyLastState[plane_num].enemyId    = menemyid;
+            enemyLastState[plane_num].enemyId    = enemy_id;
             enemyLastState[plane_num].goodsId    = -1;
             enemyLastState[plane_num].trackState =  1;
             enemyLastState[plane_num].coord      = make_pair(uavX,uavY);
@@ -712,7 +703,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
         }
       }else{//敌方无人机在最低线以上
         if( (enemyLastState[plane_num].goodsId == -1) || \
-            (enemyLastState[plane_num].enemyId != menemyid) ||\
+            (enemyLastState[plane_num].enemyId != enemy_id) ||\
             (enemyLastState[plane_num].goodsId >= mpstMatch->nGoodsNum)\
           )//还未获取货物信息
         {
@@ -724,7 +715,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
               uavGoalY = mpstMatch->astGoods[i].nEndY;
               if(enemy_id<1000)
               {
-                enemyLastState[plane_num].enemyId    = menemyid;
+                enemyLastState[plane_num].enemyId    = enemy_id;
                 enemyLastState[plane_num].goodsId    = i;
                 enemyLastState[plane_num].trackState = -1;
                 enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
@@ -740,7 +731,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<i
       
           if(enemy_id< 1000)
           {
-            enemyLastState[plane_num].enemyId    = menemyid;
+            enemyLastState[plane_num].enemyId    = enemy_id;
             enemyLastState[plane_num].trackState = -1;
             enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
           }          
