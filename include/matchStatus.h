@@ -38,6 +38,11 @@ public:
   {
     return mapStartY;
   };
+  void clearPlaneGoodsNum(int planeNum)
+  {
+    if((mpstMatch->astWeUav[planeNum].nGoodsNo ==-1)&&(mauvstate[planeNum] == SEARCH))
+      plane_goods[mpstMatch->astWeUav[planeNum].nNO]=-1;
+  }
 public:
   enum auvstate
   {

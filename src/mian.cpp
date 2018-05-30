@@ -152,16 +152,13 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
     // };
      
     
-
-    cout<<"5"<<endl;
-    pplane->set_newmatch(pstMatch);
+    pplane->set_plane_newmatch(pstMatch);
     matchstatus->set_newmatch(pstMatch);     
     
     matchstatus->wePlaneHomeInit();//初始化home点
     //renew all uav status(by huang,25)
 
 
-    
     matchstatus->auv_goods();
 
 
@@ -256,11 +253,13 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
         switch(i)
         {
         case 0:
+            printf("in back search......\n");
             pplane->plane_up(uavnum,mmhlow+1,0);//mmhlow+1 mmhhigh
             printf("back search......\n");
             break;
             
         case 1:
+            printf("in serching......\n");
             tempCoord = pplane->plane_search(uavnum, matchstatus->which_goods(uavnum),obstaclePos);//obstaclePos
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
@@ -268,16 +267,19 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
             break;
             
         case 2:
+            printf("in to get......\n");
             pplane->plane_get(uavnum,0,matchstatus->which_goods(uavnum));
             printf("to get......\n");
             break;
             
         case 3:
+            printf("in back trans......\n");
             pplane->plane_up(uavnum,mmhlow+1,1);
             printf("back trans......\n");
             break;
             
         case 4:
+            printf("in transing......\n");
             tempCoord = pplane->plane_tran(uavnum, matchstatus->which_goods(uavnum),obstaclePos);
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
@@ -285,11 +287,12 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
             break;
             
         case 5:
+            printf("in to put......\n");	
             pplane->plane_put(uavnum,0);
             printf("to put......\n");	 
             break;
         case 6:
-
+            printf("in to track......=%d\n",enemyNumStateValue);	
             tempCoord = pplane->plane_trackEnemy(uavnum,matchstatus->which_enemy(enemyNumStateValue),obstaclePos);//matchstatus->which_enemy(uavnum)
             if(tempCoord != make_pair(-1,-1))
                 obstaclePos.push_back(tempCoord);
@@ -303,63 +306,21 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
         }
       }
 
-    // for(int i=0; i<pstMatch->nUavWeNum;i++)
-    // {
-    //     if( (pstMatch->astWeUav[i].nX==pstMap->astUav[0].nX)&&\
-    //         (pstMatch->astWeUav[i].nY==pstMap->astUav[0].nY)&&(pstMatch->astWeUav[i].nZ==mmhlow))
-    //     { 
-    //         int flag_mn=0;
-
-    //         for(int m=-1;m<2;m++)
-    //         {
-    //         if((pstMap->astUav[0].nX+m<0)||((pstMap->astUav[0].nX+m)>(pstMap->nMapX-1)))//判断x是否超出边界
-    //         continue;;
-    //         for(int n=-1;n<2;n++)
-    //         {
-    //         if((pstMap->astUav[0].nY+n<0)||((pstMap->astUav[0].nY+n)>(pstMap->nMapY-1)))//判断y是否超出边界
-    //             continue;		
-    //                 int flag2=0;
-    //             for(int k=0;k<pstMatch->nUavWeNum;k++)
-    //             {
-    //                 if(pstMatch->astWeUav[k].nStatus!=0)
-    //                     continue;
-    //                 if( (pstMap->astUav[0].nX+m)==pstMatch->astWeUav[k].nX&&\
-    //                     (pstMap->astUav[0].nY+n)==pstMatch->astWeUav[k].nY&&pstMatch->astWeUav[k].nZ==mmhlow)
-    //                 {
-    //                     flag2=1;
-    //                     break;
-    //                 }
-    //                 if(pplane->mmap->get_mappoint(pstMap->astUav[0].nX+m,pstMap->astUav[0].nY+n,mmhlow))
-    //                 {
-    //                     flag2=1;
-    //                     break;					  
-    //                 }
-    //             }	
-    //             if( flag2==0)
-    //             {
-    //                 pstFlayPlane->astUav[i].nX=pstMap->astUav[0].nX+m;
-    //                 pstFlayPlane->astUav[i].nY=pstMap->astUav[0].nY+n;
-    //                 flag_mn=1;
-    //                 break;
-    //                 }
-
-    //             if(flag_mn==1)
-    //             break;
-    //         }
-    //             if(flag_mn==1)
-    //         break;
-    //         }
-    //     }
-    // }  
-
+ 
     //pplane->plane_init();
     pplane->planePathCorretion();
-
-
-    if( (pstMatch->nWeValue > mmapcreate->getPlanePrice(0)) && \
-        ((uav_work)< (pstMap->nMapX/3))) 
+    int howEnemyInhome=0;
+    for(int i=0; i<pstMatch->nUavEnemyNum; i++)
     {
-        if(track_uav_num <2)  //我方没有价值最少的飞机,攻击机器数量
+        if(matchstatus->getHomeX() == pstMatch->astEnemyUav[i].nX &&\
+           matchstatus->getHomeY() == pstMatch->astEnemyUav[i].nY )
+        {
+            howEnemyInhome++;
+        }
+    }
+    if(howEnemyInhome>0)
+    {
+        if( pstMatch->nWeValue > mmapcreate->getPlanePrice(0))
         {
             for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
             {
@@ -375,28 +336,19 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                 }                     
                 
             }
-        }else if( num_weight/2 > uavCanWork)
+        }
+    }else{
+        
+        if( (pstMatch->nWeValue > mmapcreate->getPlanePrice(0)) && \
+            ((uav_work)< (pstMap->nMapX/3))) 
         {
-            int planeTemp=0;
-            for(int i=0; i< pstMap->nUavPriceNum; i++)
-            {
-                if(mmapcreate->getPlaneWeight(i) > average_loadweight)
-                {
-                    planeTemp = i;
-                    break;
-                }
-            }
-
-            // int needBuyPlaneClass = pstMap->nUavPriceNum - planeTemp;
-            // (mmapcreate->getPlaneWeight(planeTemp);
-            int needGetPlanePrice = mmapcreate->getPlanePrice(planeTemp);
-            if(needGetPlanePrice >0)
+            if(track_uav_num <2)  //我方没有价值最少的飞机,攻击机器数量
             {
                 for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
                 {
-                    if(pstMap->astUavPrice[i].nValue==needGetPlanePrice) 
+                    if(pstMap->astUavPrice[i].nLoadWeight == mmapcreate->getMinPlaneWeight()) 
                     {
-                        if(pstMatch->nWeValue > pstMap->astUavPrice[i].nValue)
+                        if(pstMatch-> nWeValue>pstMap->astUavPrice[i].nValue)
                         {		
                             pstFlayPlane->nPurchaseNum = 1;
                             strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
@@ -406,12 +358,46 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
                     }                     
                     
                 }
+            }else if( num_weight/2 > uavCanWork)
+            {
+                int planeTemp=0;
+                for(int i=0; i< pstMap->nUavPriceNum; i++)
+                {
+                    if(mmapcreate->getPlaneWeight(i) > average_loadweight)
+                    {
+                        planeTemp = i;
+                        break;
+                    }
+                }
+
+                // int needBuyPlaneClass = pstMap->nUavPriceNum - planeTemp;
+                // (mmapcreate->getPlaneWeight(planeTemp);
+                int needGetPlanePrice = mmapcreate->getPlanePrice(planeTemp);
+                if(needGetPlanePrice >0)
+                {
+                    for(int i=0;i< pstMap->nUavPriceNum;i++)                                              
+                    {
+                        if(pstMap->astUavPrice[i].nValue==needGetPlanePrice) 
+                        {
+                            if(pstMatch->nWeValue > pstMap->astUavPrice[i].nValue)
+                            {		
+                                pstFlayPlane->nPurchaseNum = 1;
+                                strcpy(pstFlayPlane->szPurchaseType[0],pstMap->astUavPrice[i].szType);
+                                tpurchase = pstMatch->nTime;
+
+                            }
+                        }                     
+                        
+                    }
+                }
+
             }
 
+                
         }
 
-               
     }
+
 
   
 

@@ -41,7 +41,6 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
   int initState=0;
   if(isJustStart == -1)
   {
-    cout<<"6"<<endl;
     if(mpstMatch->nUavWeNum >=2 )
     {
       if( (mpstMatch->astWeUav[0].nX== mpstMatch->astWeUav[1].nX)&&\
@@ -49,7 +48,6 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
           (mpstMatch->astWeUav[0].nZ== mpstMatch->astWeUav[1].nZ)&&\
           (UAV_CRASH != mpstMatch->astWeUav[0].nStatus) && (mpstMatch->astWeUav[1].nStatus!=UAV_CRASH))
       {
-        cout<<"8"<<endl;
         initState=1;
       }
     }
@@ -60,9 +58,9 @@ void MATCHSTATUS::wePlaneHomeInit(void)//isJustStart = 0;
       mapStartY = mpstMatch->astWeUav[0].nY;
       cout<<"mapStartX="<<mapStartX<<" ; mapStartY="<<mapStartY<<endl;
     }
-    cout<<"7"<<endl;  
   }
 }
+
 void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没有给无人机安排取货物认为
 {
   int goods_num;
@@ -131,6 +129,17 @@ void MATCHSTATUS::JudWauvSta(int plane_num,int goods_no)//good_num=-1表示没�
       }
       else
       	mauvstate[plane_num]=BACK_SEARCH;	
+
+      if(mpstMatch->astWeUav[plane_num].nX != mapStartX&&\
+         mpstMatch->astWeUav[plane_num].nY != mapStartY)//飞机不在坐标原点上
+      {
+        if(mpstMatch->astWeUav[plane_num].nLoadWeight == minLoadWeight)//如果飞机是最低载重量的飞机，则作为攻击机器使用
+        {
+          mauvstate[plane_num] = TO_EnemyUav;//搜索攻击敌方无人机
+        }
+      }
+
+
     }
   }
 }
@@ -154,7 +163,7 @@ void MATCHSTATUS::auv_goods()
       plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
       continue;
     }
-    if(mpstMatch->astWeUav[i].nStatus)   //无人机坠毁
+    if(mpstMatch->astWeUav[i].nStatus==UAV_CRASH)   //无人机坠毁
     {
       plane_goods[mpstMatch->astWeUav[i].nNO]=-1;
       continue;
@@ -212,7 +221,7 @@ void MATCHSTATUS::auv_goods()
 
     if(bestPercentWorth==0&&best_goosnum==0)
       continue;
-    plane_goods[mpstMatch->astWeUav[i].nNO]=mpstMatch->astGoods[best_goosnum].nNO;
+    plane_goods[mpstMatch->astWeUav[i].nNO] = mpstMatch->astGoods[best_goosnum].nNO;
     printf("%dplane,bestPercentWorth%f,best_goosnum:%d,\n",i,bestPercentWorth,best_goosnum);
   }
 }
@@ -224,7 +233,7 @@ int MATCHSTATUS::which_goods(int plane_num)
 }
 void MATCHSTATUS::search_enemy(void)
 {
-
+    
     int enemyWeight[100]={0};
     
     for(int i=0; i<mpstMatch->nUavEnemyNum; i++)
@@ -258,7 +267,7 @@ void MATCHSTATUS::search_enemy(void)
       {
         if(mpstMatch->astEnemyUav[i].nLoadWeight >= enemyWeight[1])
         {
-          enemyIdNum[j]=i;
+          enemyIdNum[j]=mpstMatch->astEnemyUav[i].nNO;
           j++;
         }
       }

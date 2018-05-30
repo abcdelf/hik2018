@@ -31,7 +31,7 @@ public:
   pair<int, int> plane_tran(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos);
   pair<int, int> plane_trackEnemy(int plane_num,int enemy_id, vector<pair<int, int>> obstaclePos);
   void plane_put(int plane_num,int high);
-  void set_newmatch(MATCH_STATUS * pstMatch);
+  void set_plane_newmatch(MATCH_STATUS * pstMatch);
   void printgoodnum(int goo_num);
   void planePathCorretion(void);
   FLAY_PLANE* renew();

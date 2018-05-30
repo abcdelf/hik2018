@@ -205,9 +205,95 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
   int uavX = mpstMatch->astWeUav[plane_num].nX;
   int uavY = mpstMatch->astWeUav[plane_num].nY;
   int uavZ = mpstMatch->astWeUav[plane_num].nZ;
+  int dist2HomeX=0;
+  int dist2HomeY=0;
 
   if(goods_no==-1)
+  {
+    dist2HomeX = abs(mmatchStatus->getHomeX() - uavX);
+    dist2HomeY = abs(mmatchStatus->getHomeY() - uavY);
+
+    // if(dist2HomeX<5&&dist2HomeY<5)
+    // {
+    //   cout<<"0000000000000000--------------------------000000000"<<endl;
+
+    //   // srand((unsigned int)plane_num);//设置当前时间为种子
+    //   // int uavsX = rand()%10+1;//产生1~10的随机数
+    //   // int uavsY = rand()%10+1;//产生1~10的随机数
+    //   int uavsX = 5;
+    //   int uavsY =5;
+    //   vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(uavsX,uavsY),uavZ,obstaclePos);
+    //   int uavNextX=uavX;
+    //   int uavNextY=uavY;
+    //   int uavNextZ=uavZ;
+      
+    //   //mpathSearch->printPath(path);
+    //   if(path.size()>1)
+    //   {
+    //     auto p=path.begin();
+        
+    //     p++;
+    //     Node node = *p;
+
+    //     uavNextX = node.x;
+    //     uavNextY = node.y;
+    //     uavNextZ = uavZ;
+          
+    //   }else if(uavZ < mmap->getMaxFlyHeight()-1)
+    //   {
+    //     uavNextZ = uavZ+1;
+
+    //   }
+    //   mpstFlayPlane->astUav[plane_num].nY = uavNextY;
+    //   mpstFlayPlane->astUav[plane_num].nX = uavNextX;
+    //   mpstFlayPlane->astUav[plane_num].nZ = uavNextZ;
+    // cout<<"asadsdfaffffffffffffff--------------------------000000000"<<endl;
+    //  return make_pair(uavNextX,uavNextY);
+
+    // }else
+    {
+
+
+      if(uavZ< mmap->getMaxFlyHeight()-1)
+      {
+        for(int i=0; i<mpstMatch->nUavWeNum; i++)
+        {
+          if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
+          {
+            if((uavZ+1) == mpstFlayPlane->astUav[i].nZ)
+            {
+              if(uavX == mpstFlayPlane->astUav[i].nX &&\
+                 uavY == mpstFlayPlane->astUav[i].nY)
+              {
+                mpstFlayPlane->astUav[plane_num].nX = uavX;
+                mpstFlayPlane->astUav[plane_num].nY = uavY;
+                mpstFlayPlane->astUav[plane_num].nZ = uavZ;        
+                return make_pair(uavX,uavY);         
+              }else{
+                mpstFlayPlane->astUav[plane_num].nX = uavX;
+                mpstFlayPlane->astUav[plane_num].nY = uavY;
+                mpstFlayPlane->astUav[plane_num].nZ = uavZ+1; 
+                return make_pair(uavX,uavY);
+              }
+            }else{
+              mpstFlayPlane->astUav[plane_num].nX = uavX;
+              mpstFlayPlane->astUav[plane_num].nY = uavY;
+              mpstFlayPlane->astUav[plane_num].nZ = uavZ+1; 
+              return make_pair(uavX,uavY);
+            }
+
+          }
+        }
+
+      }else{
+
+      }
+
+      
+    }
     return make_pair(uavX,uavY);
+  }
+    
   int goods_num;
   for(goods_num=0;goods_num<mpstMatch->nGoodsNum;goods_num++)
   {
@@ -219,6 +305,24 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
   int goodsXStart = mpstMatch->astGoods[goods_num].nStartX;
   int goodsYStart = mpstMatch->astGoods[goods_num].nStartY;
 
+  for(int i=0; i<mpstMatch->nUavEnemyNum; i++)
+  {
+    if( mpstMatch->astEnemyUav[i].nX == goodsXStart&&\
+        mpstMatch->astEnemyUav[i].nY == goodsYStart)
+    {
+      mmatchStatus->clearPlaneGoodsNum(plane_num) ; 
+      if(uavZ< mmap->getMaxFlyHeight()-1)
+      {
+        mpstFlayPlane->astUav[plane_num].nX = uavX;
+        mpstFlayPlane->astUav[plane_num].nY = uavY;
+        mpstFlayPlane->astUav[plane_num].nZ = uavZ+1;  
+      }else{
+
+      }
+      cout<<"clear goodsNUM"<<endl;
+      return make_pair(uavX,uavY);
+    }
+  }
   printf("uavX=%3d,uavY=%3d,uavZ=%3d,goodsXStart=%d,goodsYStart=%d\r\n",uavX,uavY,uavZ,goodsXStart,goodsYStart);
   //mstar->findpath(uavX, uavY, uavZ, goodsXStart, goodsYStart,uavZ);
   vector<Node> path = mpathSearch->createGraph(make_pair(uavX,uavY),make_pair(goodsXStart,goodsYStart),uavZ,obstaclePos);
@@ -226,7 +330,7 @@ pair<int, int> PLANE::plane_search(int plane_num,int goods_no, vector<pair<int, 
   int uavNextY=uavY;
   int uavNextZ=uavZ;
   
-  mpathSearch->printPath(path);
+  //mpathSearch->printPath(path);
   if(path.size()>1)
   {
     auto p=path.begin();
@@ -513,7 +617,7 @@ void PLANE:: planePathCorretion(void)
 
 }
 
-void PLANE::set_newmatch(MATCH_STATUS * pstMatch)
+void PLANE::set_plane_newmatch(MATCH_STATUS * pstMatch)
 {
   mpstMatch=pstMatch;
 }
@@ -523,18 +627,27 @@ FLAY_PLANE* PLANE::renew()
   return mpstFlayPlane;
 }
 
-pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<int, int>> obstaclePos)
+pair<int, int> PLANE::plane_trackEnemy(int plane_num,int menemyid, vector<pair<int, int>> obstaclePos)
 {
   //plane_num 我方攻击机器的ID， enemy_id 敌方机器ID， 
   int uavX = mpstMatch->astWeUav[plane_num].nX;
   int uavY = mpstMatch->astWeUav[plane_num].nY;
   int uavZ = mpstMatch->astWeUav[plane_num].nZ;
 
-  if(enemy_id<0)
+  if(menemyid<0)
     return make_pair(uavX,uavY);
-  if(enemy_id> mpstMatch->nUavEnemyNum)
+  // if(enemy_id> mpstMatch->nUavEnemyNum)
+  // {
+  //   return make_pair(uavX,uavY);
+  // }
+  int enemy_id=0;
+  for(int i=0; i< mpstMatch->nUavEnemyNum;i++)
   {
-    return make_pair(uavX,uavY);
+    if(mpstMatch->astEnemyUav[i].nNO == menemyid)
+    {
+      enemy_id=i;
+      break;
+    }
   }
   int uavEnemyX = mpstMatch->astEnemyUav[enemy_id].nX;
   int uavEnemyY = mpstMatch->astEnemyUav[enemy_id].nY;
@@ -543,14 +656,14 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
   int uavGoalX = uavX;//路径规划目标点
   int uavGoalY = uavY;
 
-  cout<<"------------==--------------------"<<endl;
-  cout<<"-------00-----==----------------00--"<<endl;
-  cout<< "wePlane="<<plane_num <<"; enemy_id="<< enemy_id <<"  ;Weight= "<<mpstMatch->astEnemyUav[enemy_id].nLoadWeight <<endl;
+  // cout<<"------------==--------------------"<<endl;
+  // cout<<"-------00-----==----------------00--"<<endl;
+  // cout<< "wePlane="<<plane_num <<"; enemy_id="<< enemy_id <<"  ;Weight= "<<mpstMatch->astEnemyUav[enemy_id].nLoadWeight <<endl;
 
 
-  if(mpstMatch->astEnemyUav[enemy_id].nStatus == 2)//敌方无人机在雾区
+  if(mpstMatch->astEnemyUav[enemy_id].nStatus == UAV_FOG)//敌方无人机在雾区
   {
-    if(enemyLastState[plane_num].enemyId == enemy_id)
+    if(enemyLastState[plane_num].enemyId == menemyid)
     {
       
       uavGoalX = enemyLastState[plane_num].coord.first;
@@ -566,7 +679,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
       uavGoalY = mpstMatch->astEnemyUav[enemy_id].nY; 
       if(enemy_id<1000)
       {
-        enemyLastState[plane_num].enemyId    = enemy_id;
+        enemyLastState[plane_num].enemyId    = menemyid;
         enemyLastState[plane_num].goodsId    = -1;
         enemyLastState[plane_num].trackState = -1;
         enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
@@ -588,7 +701,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
           
           if(enemy_id<1000)
           {
-            enemyLastState[plane_num].enemyId    = enemy_id;
+            enemyLastState[plane_num].enemyId    = menemyid;
             enemyLastState[plane_num].goodsId    = -1;
             enemyLastState[plane_num].trackState =  1;
             enemyLastState[plane_num].coord      = make_pair(uavX,uavY);
@@ -599,7 +712,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
         }
       }else{//敌方无人机在最低线以上
         if( (enemyLastState[plane_num].goodsId == -1) || \
-            (enemyLastState[plane_num].enemyId != enemy_id) ||\
+            (enemyLastState[plane_num].enemyId != menemyid) ||\
             (enemyLastState[plane_num].goodsId >= mpstMatch->nGoodsNum)\
           )//还未获取货物信息
         {
@@ -611,7 +724,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
               uavGoalY = mpstMatch->astGoods[i].nEndY;
               if(enemy_id<1000)
               {
-                enemyLastState[plane_num].enemyId    = enemy_id;
+                enemyLastState[plane_num].enemyId    = menemyid;
                 enemyLastState[plane_num].goodsId    = i;
                 enemyLastState[plane_num].trackState = -1;
                 enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
@@ -627,7 +740,7 @@ pair<int, int> PLANE::plane_trackEnemy(int plane_num,int enemy_id, vector<pair<i
       
           if(enemy_id< 1000)
           {
-            enemyLastState[plane_num].enemyId    = enemy_id;
+            enemyLastState[plane_num].enemyId    = menemyid;
             enemyLastState[plane_num].trackState = -1;
             enemyLastState[plane_num].coord      = make_pair(uavGoalX,uavGoalY);
           }          
