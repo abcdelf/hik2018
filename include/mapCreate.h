@@ -13,55 +13,89 @@
 
 #include "include/CmdParse.h"
 #include <vector>
-
+using namespace std;
 
 class MAP
 {
 public:
-  MAP();
-  MAP(MAP_INFO *pstMap);
-  void map_build();
-  int get_mappoint (int x,int y, int z);
-  int getMapXsize(void);
-  int getMapYsize(void);
-  int getMapZsize(void);
-  int getMinFlyHeight(void);
-  int getMaxFlyHeight(void);
-  int getMinPlaneWeight(void)
-  {
-    return planeWeight[0];
-  }
-  int getMaxPlaneWeight(void)
-  {
-    return planeWeight[planeWeightNum-1];
-  }
-  int getPlaneWeight(int num)
-  {
-    if(num < planeWeightNum)
-      return planeWeight[num];
+    MAP();
+    MAP(MAP_INFO *pstMap);
+
+    inline  int get_mappoint (int x,int y, int z){
+        return map[z][y][x];
+    }
+
+    inline int getMapXsize(void){
+        return map_x;
+    }
+
+    inline int getMapYsize(void){
+        return map_y;
+    }
+
+    inline int getMapZsize(void){
+        return map_z;
+    }
+
+    inline int getMinFlyHeight(void){
+        return flyMinHeight;
+    }
+
+    inline int getMaxFlyHeight(void){
+        return flyMaxHeight;
+    }
+
+    inline pair<int,int> getUavWeHome(void){
+        return uavWeHone;
+    }
+
+    inline int getMinPlaneWeight(void){
+        return mUavLoadWeight[0];
+    }
+
+    inline int getMaxPlaneWeight(void){
+        return mUavLoadWeight[mnUavPriceNum-1];
+    }
+
+    inline int getPlaneWeight(int num){
+    if(num < mnUavPriceNum)
+        return mUavLoadWeight[num];
     else return -1;
-  }
-  int getPlanePrice(int num)
-  {
-    if(num < planeWeightNum)
-      return planePrice[num];
+    }
+
+    inline int getPlanePrice(int num){
+    if(num < mnUavPriceNum)
+        return mUavPrice[num];
     else return -1;
-  }
+    }
+
+    inline char*  getPlaneSort(int num){
+    if(num < mnUavPriceNum)
+        return mPurchaseType[num];
+    else return  nullptr;
+    }
 
 public:
-  MAP_INFO *mpstMap;
+    MAP_INFO *mpstMap;
 
 private:
-  int flyMaxHeight;
-  int flyMinHeight;
-  int map_x;
-  int map_y;
-  int map_z;
-  std::vector<std::vector<std::vector<unsigned char> > > map;
-  int planeWeight[100];
-  int planeWeightNum;
-  int planeNum[100];
-  int planePrice[100];
+  
+    int flyMaxHeight;
+    int flyMinHeight;
+
+    int map_x;
+    int map_y;
+    int map_z;
+
+    pair<int,int>  uavWeHone;
+    std::vector<std::vector<std::vector<unsigned char> > > map;
+
+    int mnUavPriceNum;
+    int mUavLoadWeight[MAX_UAV_PRICE_NUM];
+    int mUavPrice[MAX_UAV_PRICE_NUM];
+    char mPurchaseType[MAX_UAV_PRICE_NUM][8];
+
+  
 
   
 

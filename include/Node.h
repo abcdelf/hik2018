@@ -6,7 +6,7 @@ using namespace std;
 
 class Node {
 public:
-	enum Type{NORMAL, OBSTACLE};
+	enum Type{NORMAL, OBSTACLE,FOG};
 	enum State{UNVISITED, OPEN, CLOSED};
 	static map<char, Type> typeMappings;
 
