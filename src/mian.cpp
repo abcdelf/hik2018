@@ -121,20 +121,27 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
                                 MAP_CREATE* mmapcreate,MATCHSTATE *newstate)
 {
-  
+    UAV myUavStatus;
+    UAV enemyUavStatus;
+
     newstate->renewMatchstate(pstMatch);
 
+    newstate->findUavEnemyHome();//find enemy home ,just used with start
+ 
     for(int i=0;i<pstMatch->nGoodsNum;i++)
     {
         printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
     };
 
-    newstate->pickWeUavFromID(5);
+    for(int i=0; i<newstate->getWeUavNum(); i++)//有问题，此处应该是我方飞机的ID号（nNO)
+    {
+        myUavStatus = newstate->pickWeUavFromID(i);
+
+    }
+    
+
     cout<<"currenttime"<<newstate->getCurrentTime()<<endl;
   
-  
-    newstate->findUavEnemyHome();
-    cout<<"mapStartX="<<newstate->getUavEnemyHome().first<<" ; mapStartY="<<newstate->getUavEnemyHome().second<<endl;
 
 
 }
@@ -338,10 +345,7 @@ int main(int argc, char *argv[])
     
     
     //打印地图信息
-    // for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
-    // {
-    //     printf("weight:%8d,     price:%8d,       Type:%5s\n",mymap->getPlaneWeight(i),mymap->getPlanePrice(i),mymap->getPlaneSort(i));
-    // }
+
     for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
     {
         printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
@@ -370,6 +374,10 @@ int main(int argc, char *argv[])
         // 进行当前时刻的数据计算, 填充飞行计划结构体，注意：0时刻不能进行移动，即第一次进入该循环时
         if (pstMatchStatus->nTime != 0)
         {
+            for (int i = 0; i < pstMapInfo->nUavNum; i++)
+            {
+                pstFlayPlane->astUav[i] = pstMatchStatus->astWeUav[i];
+            }
            AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, mymap,matchstate);
         }
 

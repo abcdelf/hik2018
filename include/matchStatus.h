@@ -65,6 +65,8 @@ private:
   int mhlow;
   int minLoadWeight;
   
+
+
   int enemyNum;
   int enemyIdNum[1000];
 

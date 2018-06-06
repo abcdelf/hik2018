@@ -17,23 +17,26 @@ public:
     GOODS pickGoodsFromID(int GoodsId);
     void findUavEnemyHome(void);
 
-    inline int  getCurrentTime()
+    int  getCurrentTime()
     {
         return mpstMatch->nTime;
     }
-    inline int getWeValue()
+    int getWeValue()
     {
         return mpstMatch->nWeValue;
     }
-    inline int getEnemyValue()
+    int getEnemyValue()
     {
         return mpstMatch->nWeValue;
     }
-    inline pair<int,int> getUavEnemyHome()
+    pair<int,int> getUavEnemyHome()
     {
         return uavEnemyHome;
     }
-	
+	int getWeUavNum(void)
+    {
+        return weUav.size();
+    }
 private:
 	MATCH_STATUS * mpstMatch;	
 	map<int,UAV> weUav;
@@ -41,6 +44,7 @@ private:
 	map<int,GOODS> Goods;
 	int isJustStart;
 	pair<int,int> uavEnemyHome;
+
 
 
 

@@ -16,11 +16,18 @@ void MATCHSTATE::renewMatchstate(MATCH_STATUS * pstMatch)
 	mpstMatch=pstMatch;
 	
 	weUav.clear();
+
 	for(int i=0;i<mpstMatch->nUavWeNum;i++)
 	{
-		weUav.insert(pair<int,UAV> (mpstMatch->astWeUav[i].nNO,mpstMatch->astWeUav[i]));
+		if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)
+		{
+			weUav.insert(pair<int,UAV> (mpstMatch->astWeUav[i].nNO,mpstMatch->astWeUav[i]));
+		}
+			
 	}
 	
+	cout<<"WeUavNUM"<<weUav.size()<<endl;
+
 	enemyUav.clear();
 	for(int i=0;i<mpstMatch->nUavEnemyNum;i++)
 	{
@@ -47,7 +54,7 @@ UAV MATCHSTATE::pickWeUavFromID(int weUavId)
 	}
 	else	  
 	{
-	        cout<<"nNO "<<it->second.nNO<<" found"<<endl; 
+	    cout<<"nNO "<<it->second.nNO<<" found"<<endl; 
 		return it->second;
 	}
 }
@@ -108,8 +115,10 @@ void MATCHSTATE::findUavEnemyHome(void)//isJustStart = 0;
     }
     if(initState==1)
     {
-      isJustStart = 0;
-     uavEnemyHome=make_pair(mpstMatch->astEnemyUav[0].nX,mpstMatch->astEnemyUav[0].nY);
+		isJustStart = 0;
+		uavEnemyHome=make_pair(mpstMatch->astEnemyUav[0].nX,mpstMatch->astEnemyUav[0].nY);
+		cout<<"enemyHomeX="<<this->getUavEnemyHome().first<<" ; enemyHomeY="<<this->getUavEnemyHome().second<<endl;
+
     }
   }
 }
