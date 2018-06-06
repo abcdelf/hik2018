@@ -8,7 +8,7 @@
 #include <queue>
 #include <math.h>
 #include <iostream>
-#include "include/Node.h"
+#include "Node.h"
 using namespace std;
 
 class SquareGraph {

@@ -1,8 +1,10 @@
 #ifndef MATCHSTATE_H
 #define MATCHSTATE_H
 
-#include "include/CmdParse.h"
+#include "CmdParse.h"
 #include <map>
+#include <iostream>
+
 using namespace std;
 
 
@@ -13,6 +15,7 @@ public:
     MATCHSTATE();
     void renewMatchstate(MATCH_STATUS * pstMatch);
     UAV pickWeUavFromID(int weUavId);
+    UAV pickWeUavFromNum(int num);
     UAV pickEnemyUavFromID(int enemyUavId);
     GOODS pickGoodsFromID(int GoodsId);
     void findUavEnemyHome(void);
@@ -35,11 +38,12 @@ public:
     }
 	int getWeUavNum(void)
     {
-        return weUav.size();
+        return m_weUav.size();
     }
 private:
 	MATCH_STATUS * mpstMatch;	
-	map<int,UAV> weUav;
+	map<int,UAV> m_weUavID;
+    map<int,UAV> m_weUav;
 	map<int,UAV> enemyUav;
 	map<int,GOODS> Goods;
 	int isJustStart;

@@ -8,7 +8,7 @@
  *	@note		V1.0.0  
  *	@warning	
  */
-#include "include/mapCreate.h"
+#include "mapCreate.h"
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
@@ -32,7 +32,7 @@ MAP_CREATE::MAP_CREATE(MAP_INFO *pstMap):mpstMap(pstMap)
 	flyMinHeight =  mpstMap->nHLow;
     
 	//我方停机坪位置
-	uavWeHone=make_pair(mpstMap->nParkingX,mpstMap->nParkingY);
+	uavWeHome=make_pair(mpstMap->nParkingX,mpstMap->nParkingY);
        
 	//可购买的飞机的种类数
 	mnUavPriceNum = mpstMap->nUavPriceNum;

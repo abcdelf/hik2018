@@ -1,6 +1,6 @@
-#include "include/matchState.h"
+#include "matchState.h"
 
-#include <iostream>
+
 using namespace std;
 
 MATCHSTATE::MATCHSTATE()
@@ -15,18 +15,20 @@ void MATCHSTATE::renewMatchstate(MATCH_STATUS * pstMatch)
 {
 	mpstMatch=pstMatch;
 	
-	weUav.clear();
+	m_weUavID.clear();
+	m_weUav.clear();
 
 	for(int i=0;i<mpstMatch->nUavWeNum;i++)
 	{
-		if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)
+		if(mpstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
 		{
-			weUav.insert(pair<int,UAV> (mpstMatch->astWeUav[i].nNO,mpstMatch->astWeUav[i]));
+			m_weUav.insert(pair<int,UAV> (i,mpstMatch->astWeUav[i]));
+			m_weUavID.insert(pair<int,UAV> (mpstMatch->astWeUav[i].nNO,mpstMatch->astWeUav[i]));
 		}
 			
 	}
 	
-	cout<<"WeUavNUM"<<weUav.size()<<endl;
+	cout<<"WeUavNUM"<<m_weUav.size()<<endl;
 
 	enemyUav.clear();
 	for(int i=0;i<mpstMatch->nUavEnemyNum;i++)
@@ -47,8 +49,26 @@ void MATCHSTATE::renewMatchstate(MATCH_STATUS * pstMatch)
 UAV MATCHSTATE::pickWeUavFromID(int weUavId)
 {
 	map<int,UAV>::iterator it;
-	it=weUav.find(weUavId);	
-	if(it==weUav.end())
+	it = m_weUavID.find(weUavId);	
+	if(it== m_weUavID.end())
+	{
+		cout<<"weUavId not found"<<endl;
+	}
+	else	  
+	{
+	    cout<<"nNO "<<it->second.nNO<<" found"<<endl; 
+		return it->second;
+	}
+}
+
+/**
+ * @brief 获取weUavId的我方飞机的结构体
+ */
+UAV MATCHSTATE::pickWeUavFromNum(int num)
+{
+	map<int,UAV>::iterator it;
+	it = m_weUav.find(num);	
+	if(it== m_weUav.end())
 	{
 		cout<<"weUavId not found"<<endl;
 	}

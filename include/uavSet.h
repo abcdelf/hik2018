@@ -11,12 +11,12 @@
 #ifndef UAVSET_H
 #define UAVSET_H
 
-#include "include/CmdParse.h"
+#include "CmdParse.h"
 #include <vector>
-#include "include/SquareGraph.h"
-#include "include/mapCreate.h"
-#include "include/search.h"
-#include "include/matchStatus.h"
+#include "SquareGraph.h"
+#include "mapCreate.h"
+#include "search.h"
+#include "matchStatus.h"
 
 using namespace std;
 

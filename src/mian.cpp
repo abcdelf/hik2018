@@ -13,15 +13,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "include/OSSocket.h"
-#include "include/JsonParse.h"
-#include "include/CmdParse.h"
-#include "include/mapCreate.h"
-
-#include "include/SquareGraph.h"
-
-
-#include "include/matchState.h"
+#include "OSSocket.h"
+#include "JsonParse.h"
+#include "CmdParse.h"
+#include "mapCreate.h"
+#include "SquareGraph.h"
+#include "matchState.h"
+#include "uavTask.h"
 #define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
 
 
@@ -119,7 +117,7 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 
 
 void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
-                                MAP_CREATE* mmapcreate,MATCHSTATE *newstate)
+                                MAP_CREATE* mmapcreate,MATCHSTATE *newstate, UAV_TASK *uavTask)
 {
     UAV myUavStatus;
     UAV enemyUavStatus;
@@ -130,15 +128,17 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
  
     for(int i=0;i<pstMatch->nGoodsNum;i++)
     {
-        printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
+      //  printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
     };
 
-    for(int i=0; i<newstate->getWeUavNum(); i++)//有问题，此处应该是我方飞机的ID号（nNO)
+    for(int i=0; i< newstate->getWeUavNum(); i++)
     {
-        myUavStatus = newstate->pickWeUavFromID(i);
+        
+        myUavStatus = newstate->pickWeUavFromNum(i);
 
     }
-    
+
+    uavTask->uavTaskProcess(pstMatch);
 
     cout<<"currenttime"<<newstate->getCurrentTime()<<endl;
   
@@ -365,6 +365,7 @@ int main(int argc, char *argv[])
 
     MATCHSTATE *matchstate=new MATCHSTATE();
 
+    UAV_TASK *uavTask = new UAV_TASK(mymap,pstFlayPlane);
 
     
     
@@ -376,9 +377,9 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < pstMapInfo->nUavNum; i++)
             {
-                pstFlayPlane->astUav[i] = pstMatchStatus->astWeUav[i];
+                pstFlayPlane->astUav[i].nStatus = UAV_CRASH;
             }
-           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, mymap,matchstate);
+           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, mymap,matchstate, uavTask);
         }
 
 
@@ -395,7 +396,7 @@ int main(int argc, char *argv[])
             return nRet;
         }
 
-       // printf("%s\n", pSendBuffer);
+        //printf("%s\n", pSendBuffer);
 
         // 接受当前比赛状态
         memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);

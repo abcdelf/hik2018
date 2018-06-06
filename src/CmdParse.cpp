@@ -10,7 +10,7 @@
  */
 
 
-#include "include/CmdParse.h"
+#include "CmdParse.h"
 #include <string.h>
 
 

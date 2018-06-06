@@ -11,7 +11,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "include/CmdParse.h"
+#include "CmdParse.h"
 #include <vector>
 #include <map>
 
@@ -55,7 +55,7 @@ public:
     }
 
     pair<int,int> getUavWeHome(void){
-        return uavWeHone;
+        return uavWeHome;
     }
 
     int getMinPlaneWeight(void){
@@ -99,7 +99,7 @@ private:
     int map_y;
     int map_z;
 
-    pair<int,int>  uavWeHone;
+    pair<int,int>  uavWeHome;
     std::vector<std::vector<std::vector<unsigned char> > > map;
 
     int mnUavPriceNum;

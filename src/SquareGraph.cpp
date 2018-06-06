@@ -1,4 +1,4 @@
-#include "include/SquareGraph.h"
+#include "SquareGraph.h"
 
 SquareGraph::SquareGraph(int dimension): map(dimension, vector<Node>(dimension)), openNodes(), closedNodes() {
 }

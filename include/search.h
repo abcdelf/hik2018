@@ -1,8 +1,8 @@
 #ifndef __SEARCH_H_
 #define __SEARCH_H_
 
-#include "include/SquareGraph.h"
-#include "include/mapCreate.h"
+#include "SquareGraph.h"
+#include "mapCreate.h"
 
 
 class pathSearch{

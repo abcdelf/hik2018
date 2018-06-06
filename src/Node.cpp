@@ -1,4 +1,4 @@
-#include "include/Node.h"
+#include "Node.h"
 
 map<char, Node::Type> Node::typeMappings = {{0, NORMAL}, {1, OBSTACLE},{2,FOG}};
 

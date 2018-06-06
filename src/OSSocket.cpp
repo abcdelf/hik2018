@@ -9,7 +9,7 @@
  *	@warning
  */
 
-#include "include/OSSocket.h"
+#include "OSSocket.h"
 #include "stdlib.h"
 #include "stdio.h"
 

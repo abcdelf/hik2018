@@ -11,8 +11,8 @@
 #ifndef MATCHSTATUS_H
 #define MATCHSTATUS_H
 
-#include "include/CmdParse.h"
-#include "include/mapCreate.h"
+#include "CmdParse.h"
+#include "mapCreate.h"
 #include <vector>
 #include <map>
 

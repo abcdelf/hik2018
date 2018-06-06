@@ -3,7 +3,7 @@ CC				= $(CROSS_COMPILER)g++
 
 CODE_DIR 			= ./src
 SRC_DIR 			= $(CODE_DIR)
-INC_DIR 			= ./
+INC_DIR 			= ./include
 OBJ_DIR				= ./OBJ
 
 TARGET_LIB			= main.exe
