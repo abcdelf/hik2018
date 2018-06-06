@@ -83,7 +83,8 @@ typedef enum _UAV_STATUS_
 {
     UAV_NOMAL = 0,
     UAV_CRASH,
-    UAV_FOG
+    UAV_FOG,
+    UAV_CHARGE,
 }UAV_STATUS;
 
 typedef struct _UAV_
@@ -96,6 +97,7 @@ typedef struct _UAV_
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
     UAV_STATUS  nStatus;
     int     nGoodsNo;
+    int     remainElectricity;
 }UAV;
 
 
@@ -104,6 +106,8 @@ typedef struct _UAV_PRICE_
     char    szType[8];
     int     nLoadWeight;
     int     nValue;
+    int     capacity;
+    int     charge;
 }UAV_PRICE;
 
 /** @struct

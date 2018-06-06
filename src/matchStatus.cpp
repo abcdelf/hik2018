@@ -16,7 +16,7 @@ MATCHSTATUS::MATCHSTATUS()
 {
  }
  
-MATCHSTATUS::MATCHSTATUS(MAP* mmap,MAP_INFO *pstMap):\
+MATCHSTATUS::MATCHSTATUS(MAP_CREATE* mmap,MAP_INFO *pstMap):\
                           mymap(mmap),mpstMap(pstMap)
 {
   map<int, int>::iterator it;

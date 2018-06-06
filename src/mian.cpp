@@ -119,22 +119,23 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 
 
 void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
-                                MAP* mmapcreate,MATCHSTATE *newstate)
+                                MAP_CREATE* mmapcreate,MATCHSTATE *newstate)
 {
   
-  newstate->renewMatchstate(pstMatch);
-       for(int i=0;i<pstMatch->nGoodsNum;i++)
- {
-    printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
-  };
+    newstate->renewMatchstate(pstMatch);
 
-   newstate->pickWeUavFromID(5);
-   cout<<"currenttime"<<newstate->getCurrentTime()<<endl;
+    for(int i=0;i<pstMatch->nGoodsNum;i++)
+    {
+        printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
+    };
+
+    newstate->pickWeUavFromID(5);
+    cout<<"currenttime"<<newstate->getCurrentTime()<<endl;
   
   
     newstate->findUavEnemyHome();
     cout<<"mapStartX="<<newstate->getUavEnemyHome().first<<" ; mapStartY="<<newstate->getUavEnemyHome().second<<endl;
-  
+
 
 }
 
@@ -330,19 +331,33 @@ int main(int argc, char *argv[])
         pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
     }
 
+    cout<<"start"<<endl;
+
     // 进入主函数之前，初始化地图信息
-    MAP* mymap=new MAP(pstMapInfo);
+    MAP_CREATE* mymap=new MAP_CREATE(pstMapInfo);
     
     
     //打印地图信息
+    // for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
+    // {
+    //     printf("weight:%8d,     price:%8d,       Type:%5s\n",mymap->getPlaneWeight(i),mymap->getPlanePrice(i),mymap->getPlaneSort(i));
+    // }
     for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
     {
-        printf("weight:%8d,     price:%8d,       Type:%5s\n",mymap->getPlaneWeight(i),mymap->getPlanePrice(i),mymap->getPlaneSort(i));
+        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
+               pstMapInfo->astUavPrice[i].szType,pstMapInfo->astUavPrice[i].nLoadWeight,pstMapInfo->astUavPrice[i].nValue,\
+               pstMapInfo->astUavPrice[i].capacity, pstMapInfo->astUavPrice[i].charge);
     }
-    for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
+
+    for(int i=0;i<mymap->getPlaneTypeNum();i++)
     {
-        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d\n",pstMapInfo->astUavPrice[i].szType,pstMapInfo->astUavPrice[i].nLoadWeight,pstMapInfo->astUavPrice[i].nValue);
+        int planWeight = mymap->getPlaneWeight(i);
+        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
+                mymap->getPlaneUavPrice(planWeight).szType,mymap->getPlaneUavPrice(planWeight).nLoadWeight,\
+                mymap->getPlaneUavPrice(planWeight).nValue,mymap->getPlaneUavPrice(planWeight).capacity,\
+                mymap->getPlaneUavPrice(planWeight).charge);
     }
+
 
     MATCHSTATE *matchstate=new MATCHSTATE();
 

@@ -16,7 +16,7 @@ PLANE::PLANE()
 {
 }
 
-PLANE::PLANE(MAP* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch ,MATCHSTATUS* matchstatus):\
+PLANE::PLANE(MAP_CREATE* map,FLAY_PLANE* pstFlayPlane,pathSearch* roadSearch ,MATCHSTATUS* matchstatus):\
         mmap(map),mpstFlayPlane(pstFlayPlane),mpathSearch(roadSearch),mmatchStatus(matchstatus)
 {
     for(int i=0;i<MAX_PLANE_NUM;i++)

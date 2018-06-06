@@ -24,7 +24,7 @@ class PLANE
 {
 public:
   PLANE();
-  PLANE(MAP* map,FLAY_PLANE* pstFlayPlane, pathSearch* roadSearch,MATCHSTATUS* matchstatus);
+  PLANE(MAP_CREATE* map,FLAY_PLANE* pstFlayPlane, pathSearch* roadSearch,MATCHSTATUS* matchstatus);
   void plane_up(int plane_num,int high,int flag);  //flag:0=back_search,flag=1:back_trans
   void plane_get(int plane_num,int high,int goods_no);
   pair<int, int> plane_search(int plane_num,int goods_no, vector<pair<int, int>> obstaclePos);
@@ -41,7 +41,7 @@ public:
 private:
 
   vector<int> PlanSetate;
-  MAP* mmap;
+  MAP_CREATE* mmap;
   FLAY_PLANE* mpstFlayPlane;
   MATCH_STATUS* mpstMatch;
   pathSearch* mpathSearch;

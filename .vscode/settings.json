@@ -14,6 +14,7 @@
         "cstdlib": "cpp",
         "*.tcc": "cpp",
         "system_error": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iostream": "cpp"
     }
 }

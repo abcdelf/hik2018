@@ -10,16 +10,17 @@
  */
 #include "include/mapCreate.h"
 #include <string.h>
-
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
-MAP::MAP()
+MAP_CREATE::MAP_CREATE()
 {
   
 }
 
-MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
+MAP_CREATE::MAP_CREATE(MAP_INFO *pstMap):mpstMap(pstMap)
 {
 	//地图大小
 	map_x=mpstMap->nMapX;
@@ -35,12 +36,21 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
        
 	//可购买的飞机的种类数
 	mnUavPriceNum = mpstMap->nUavPriceNum;
+	
+	//std::cout<<mnUavPriceNum<<endl;
+
+	int uavWeight = 0;
 
 	for(int i=0;i< mnUavPriceNum;i++)
 	{
-		mUavLoadWeight[i] = mpstMap->astUavPrice[i].nLoadWeight;
+		uavWeight = mUavLoadWeight[i] = mpstMap->astUavPrice[i].nLoadWeight;
+		
+		m_uavPrice[uavWeight]   	  = mpstMap->astUavPrice[i];//保存重量对应的UAV_PRICE参数
+
 	}
 	
+	//cout<<m_uavPrice[20].capacity;
+
 	//对可购买的飞机的种类按载重从小到达排列
 	int n = mnUavPriceNum;
 	for (int i = 0; i<n - 1; i++) 
@@ -55,32 +65,7 @@ MAP::MAP(MAP_INFO *pstMap):mpstMap(pstMap)
 			}
 		}
 	}  
-       
-        //用顺序载重更新顺序价值
-	for(int i=0;i< mpstMap->nUavPriceNum; i++)                                              
-	{
-		for(int j=0;j<mpstMap->nUavPriceNum; j++)
-		{
-			if(mpstMap->astUavPrice[j].nLoadWeight == mUavLoadWeight[i]) 
-			{
-				mUavPrice[i] = mpstMap->astUavPrice[j].nValue;
-				break;
-			}  
-		}  
-	}
-	
-	//用顺序载重更新顺序飞机名称
-	for(int i=0;i< mpstMap->nUavPriceNum; i++)                                              
-	{
-		for(int j=0;j<mpstMap->nUavPriceNum; j++)
-		{
-			if(mpstMap->astUavPrice[j].nLoadWeight == mUavLoadWeight[i]) 
-			{
-				strcpy(mPurchaseType[i],mpstMap->astUavPrice[j].szType);
-				break;
-			}  
-		}  
-	}
+
 
 	//初始化地图的每个点为0
 	map.resize(map_z);  

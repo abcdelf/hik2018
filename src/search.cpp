@@ -15,7 +15,7 @@ pathSearch::~pathSearch(void)
     
 }
 
-pathSearch::pathSearch(MAP *map):mmap(map)
+pathSearch::pathSearch(MAP_CREATE *map):mmap(map)
 {
     // mapXsizeG = mmap->getMapXsize();
     // mapYsizeG = mmap->getMapYsize();
