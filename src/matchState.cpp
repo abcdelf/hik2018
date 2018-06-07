@@ -28,7 +28,7 @@ void MATCHSTATE::renewMatchstate(MATCH_STATUS * pstMatch)
 			
 	}
 	
-	cout<<"WeUavNUM"<<m_weUav.size()<<endl;
+    //cout<<"WeUavNUM"<<m_weUav.size()<<endl;
 
 	enemyUav.clear();
 	for(int i=0;i<mpstMatch->nUavEnemyNum;i++)

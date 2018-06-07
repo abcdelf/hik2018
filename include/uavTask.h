@@ -5,6 +5,8 @@
 #include "matchState.h"
 #include "mapCreate.h"
 #include <map>
+#include <math.h>
+
 using namespace std;
 
 enum{
@@ -17,6 +19,8 @@ enum{
     UAV_STATE_CHARGE=1,//空闲状态下，涉及到充电，地址分配，任务分配
     UAV_STATE_RAND,
     UAV_STATE_TRACK,
+    UAV_GOOD_TO_GET,
+    UAV_GOOD_TO_PUT,
 };
 
 typedef struct{
@@ -30,9 +34,10 @@ typedef struct {
     int taskClass;
     int enemyNo;
     int goodsNo;
+    int randLocationState;
     uavCoord_t nowLocation;
-    uavCoord_t nextLocation;
-
+    uavCoord_t goalLocation;
+    int taskInIdelTime;
 
 
 }uavTask_t;
@@ -55,10 +60,12 @@ class UAV_TASK{
     MAP_CREATE *m_mapCreate;
     FLAY_PLANE *m_pstFlayPlane;
 
+    void uavRun(int uavID, UAV uavStatus);
+    void uavTaskInGoods(int uavID, UAV uavStatus);
     void uavTaskAssignGoods(int uavID, UAV uavStatus);
     void uavTaskAssign(int uavID, UAV uavStatus);
     void uavTaskAllot(int uavID, UAV uavStatus);
-    void uavTaskInIDEL(int uavID, UAV uavStatus, uavTask_t uavTask);
+    void uavTaskInIDEL(int uavID, UAV uavStatus);
     void uavChargeProcess(int uavID, UAV uavStatus);
 
 
@@ -78,8 +85,14 @@ class UAV_TASK{
     int weHomeX;
     int weHomeY;
 
+    int mapXsize;
+    int mapYsize;
+    int mapZsize;
+
     int minFlyHeight;
     int MaxFlyHeight;
+
+    #define random(x) (rand()%x)
 
     int isUavInHome(int uavX, int uavY)
     {

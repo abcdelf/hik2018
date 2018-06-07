@@ -97,6 +97,7 @@ MAP_CREATE::MAP_CREATE(MAP_INFO *pstMap):mpstMap(pstMap)
 				}
 			}
 		 }
+
 		for(int build_num=0;build_num<mpstMap->nBuildingNum;build_num++)
 		{
 			if(z>mpstMap->astBuilding[build_num].nH)
