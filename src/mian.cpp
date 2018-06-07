@@ -22,6 +22,7 @@
 #include "uavTask.h"
 
 #include <fstream>
+#include "search.h"
 
 #define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
 
@@ -373,7 +374,8 @@ int main(int argc, char *argv[])
 
     MATCHSTATE *matchstate=new MATCHSTATE();
 
-    UAV_TASK *uavTask = new UAV_TASK(mymap,pstFlayPlane);
+    pathSearch *mpathSearch = new pathSearch(mymap);
+    UAV_TASK *uavTask = new UAV_TASK(mymap,pstFlayPlane,mpathSearch);
 
     
     

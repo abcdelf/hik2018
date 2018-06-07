@@ -61,6 +61,7 @@ vector<Node> pathSearch::createGraph(pair<int, int> start, pair<int, int> goal, 
         for(int j=0; j< mmap->getMapYsize(); j++){
 
             char type = mmap->get_mappoint(i,j,height);
+            if(type == 2) type =0;
             mySquareGreph->setCellValue(make_pair(i, j), type);
         }
     }//初始化最初的地图

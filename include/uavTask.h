@@ -6,6 +6,10 @@
 #include "mapCreate.h"
 #include <map>
 #include <math.h>
+#include <queue>
+#include <assert.h>
+
+#include "search.h"
 
 using namespace std;
 
@@ -23,6 +27,13 @@ enum{
     UAV_GOOD_TO_PUT,
 };
 
+enum{
+    UAV_NOT_IN_QUEUE=1,
+    UAV_IN_OUT_QUEUE,
+    UAV_IN_BACK_QUEUE,
+
+};
+
 typedef struct{
     int x;
     int y;
@@ -35,7 +46,9 @@ typedef struct {
     int enemyNo;
     int goodsNo;
     int randLocationState;
+    int uavHomeStatus;
     uavCoord_t nowLocation;
+    uavCoord_t nextLocation;
     uavCoord_t goalLocation;
     int taskInIdelTime;
 
@@ -46,7 +59,7 @@ class UAV_TASK{
 
   public:
 
-    UAV_TASK(MAP_CREATE *m_map_create, FLAY_PLANE* pstFlayPlane);
+    UAV_TASK(MAP_CREATE *m_map_create, FLAY_PLANE* pstFlayPlane, pathSearch* pPathSearch );
     uavTask_t getUavTaskWithID(int uavID);
     void setUavTaskWithID(int uavID, uavTask_t uavTask);
     void clearUavTaskWithID(int uavID);
@@ -59,6 +72,7 @@ class UAV_TASK{
   private:
     MAP_CREATE *m_mapCreate;
     FLAY_PLANE *m_pstFlayPlane;
+    pathSearch* m_PathSearch;
 
     void uavRun(int uavID, UAV uavStatus);
     void uavTaskInGoods(int uavID, UAV uavStatus);
@@ -81,6 +95,8 @@ class UAV_TASK{
     map<int, int>   m_uavGoodsID;
 
     map<int , uavTask_t> m_uavTask;//link the uav ID with uav Task
+
+    vector<UAV> uavOutHomeQueue;
 
     int weHomeX;
     int weHomeY;
