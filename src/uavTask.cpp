@@ -123,8 +123,8 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus, uavTask_t uavTask)
 			m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nZ = nextZ;
         }else{//达到飞行高度
             //根据目标点，运行路径规划
-            m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nX++;
-            m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nY++;
+            //m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nX++;
+            //m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nY++;
 		}
 	}
 
