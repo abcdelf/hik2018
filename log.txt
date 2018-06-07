@@ -1,0 +1,5 @@
+Type:F3 nLoadWeight:20 nValue:130 capacity:1500 charge:1000
+Type:F4 nLoadWeight:30 nValue:190 capacity:2500 charge:800
+Type:F2 nLoadWeight:50 nValue:350 capacity:4000 charge:2000
+Type:F1 nLoadWeight:100 nValue:600 capacity:10000 charge:3000
+Type:F5 nLoadWeight:360 nValue:1000 capacity:20000 charge:8000

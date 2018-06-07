@@ -55,6 +55,8 @@ class UAV_TASK{
     MAP_CREATE *m_mapCreate;
     FLAY_PLANE *m_pstFlayPlane;
 
+    void uavTaskAssignGoods(int uavID, UAV uavStatus);
+    void uavTaskAssign(int uavID, UAV uavStatus);
     void uavTaskAllot(int uavID, UAV uavStatus);
     void uavTaskInIDEL(int uavID, UAV uavStatus, uavTask_t uavTask);
     void uavChargeProcess(int uavID, UAV uavStatus);
@@ -64,14 +66,20 @@ class UAV_TASK{
     map<int, UAV> m_weUavID;
     map<int, int> m_uavPlanID;
     map<int, UAV> m_weUav;
-    map<int, UAV> enemyUav;
-    map<int, GOODS> Goods;
-    
+
+    map<int, UAV> m_enemyUavID;
+    map<int, int> m_uavTrackID;
+
+    map<int, GOODS> m_Goods;
+    map<int, int>   m_uavGoodsID;
+
     map<int , uavTask_t> m_uavTask;//link the uav ID with uav Task
 
     int weHomeX;
     int weHomeY;
 
+    int minFlyHeight;
+    int MaxFlyHeight;
 
     int isUavInHome(int uavX, int uavY)
     {

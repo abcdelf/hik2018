@@ -20,6 +20,9 @@
 #include "SquareGraph.h"
 #include "matchState.h"
 #include "uavTask.h"
+
+#include <fstream>
+
 #define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
 
 
@@ -126,21 +129,21 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
 
     newstate->findUavEnemyHome();//find enemy home ,just used with start
  
-    for(int i=0;i<pstMatch->nGoodsNum;i++)
-    {
-      //  printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
-    };
+//    for(int i=0;i<pstMatch->nGoodsNum;i++)
+//    {
+//      //  printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
+//    };
 
-    for(int i=0; i< newstate->getWeUavNum(); i++)
-    {
+//    for(int i=0; i< newstate->getWeUavNum(); i++)
+//    {
         
-        myUavStatus = newstate->pickWeUavFromNum(i);
+//        myUavStatus = newstate->pickWeUavFromNum(i);
 
-    }
+//    }
 
     uavTask->uavTaskProcess(pstMatch);
 
-    cout<<"currenttime"<<newstate->getCurrentTime()<<endl;
+    cout<<"currenttime= "<<newstate->getCurrentTime()<<endl;
   
 
 
@@ -345,6 +348,8 @@ int main(int argc, char *argv[])
     
     
     //打印地图信息
+    ofstream outFile;
+    outFile.open("log.txt");
 
     for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
     {
@@ -360,8 +365,11 @@ int main(int argc, char *argv[])
                 mymap->getPlaneUavPrice(planWeight).szType,mymap->getPlaneUavPrice(planWeight).nLoadWeight,\
                 mymap->getPlaneUavPrice(planWeight).nValue,mymap->getPlaneUavPrice(planWeight).capacity,\
                 mymap->getPlaneUavPrice(planWeight).charge);
+        outFile<<"Type:"<<mymap->getPlaneUavPrice(planWeight).szType<<" nLoadWeight:"<<mymap->getPlaneUavPrice(planWeight).nLoadWeight\
+              <<" nValue:"<<mymap->getPlaneUavPrice(planWeight).nValue<<" capacity:"<<mymap->getPlaneUavPrice(planWeight).capacity\
+             <<" charge:"<<mymap->getPlaneUavPrice(planWeight).charge<<endl;
     }
-
+    outFile.close();
 
     MATCHSTATE *matchstate=new MATCHSTATE();
 
