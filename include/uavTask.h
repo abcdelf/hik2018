@@ -98,7 +98,8 @@ class UAV_TASK{
 
     map<int , uavTask_t> m_uavTask;//link the uav ID with uav Task
 
-
+    map<int , uavCoord_t> m_weUavNextPiont;
+    map<int , uavCoord_t> m_weUavNowPiont;
 
     vector<UAV> uavOutHomeQueue;
     vector<UAV> uavBackHomeQueue;

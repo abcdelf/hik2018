@@ -63,7 +63,10 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
 	m_weUavID.clear();
 	m_weUav.clear();
 	m_uavPlanID.clear();
+    m_weUavNextPiont.clear();//保存我方无人机的要走的位置，初始化为当前坐标
+    m_weUavNowPiont.clear();
 
+    uavCoord_t coordTemp;
 	for(int i=0;i<pstMatch->nUavWeNum;i++)
 	{
 		if(pstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
@@ -72,6 +75,11 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
 			m_weUavID.insert(pair<int,UAV> (pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i]));
 			m_uavPlanID.insert(pair<int, int>(pstMatch->astWeUav[i].nNO, i));
 
+            coordTemp.x = pstMatch->astWeUav[i].nX;
+            coordTemp.y = pstMatch->astWeUav[i].nY;
+            coordTemp.z = pstMatch->astWeUav[i].nZ;
+            m_weUavNextPiont.insert(pair<int, uavCoord_t>(pstMatch->astWeUav[i].nNO, coordTemp));
+            m_weUavNowPiont.insert(pair<int, uavCoord_t>(pstMatch->astWeUav[i].nNO, coordTemp));
 		}else{
 			this->clearUavTaskWithID(pstMatch->astWeUav[i].nNO);
 
@@ -112,8 +120,49 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
     m_uavTask[uavID].nowLocation.y=uavStatus.nY;
     m_uavTask[uavID].nowLocation.z=uavStatus.nZ;
 
+    vector<pair<int, int>> weUavObstaclePos;
     if(m_uavTask[uavID].taskClass != UAV_TASK_TRACK)// 普通模式下，避开敌方无人机，避开我方无人机
     {
+        //我方无人机障碍
+        int uavWeIDTemp =0;
+        uavCoord_t uavWeTempCoord;
+        int weUavDisX=0;
+        int weUavDisY=0;
+        for(map<int,uavCoord_t>::iterator it= m_weUavNextPiont.begin(); it!= m_weUavNextPiont.end(); it++)//扁历存在的ID
+        {
+            uavWeIDTemp      = it->first;
+            uavWeTempCoord   = it->second;
+            if(uavWeIDTemp != uavID)
+            {
+                if(uavWeTempCoord.z == uavStatus.nZ)
+                {
+                    weUavDisX =abs(uavWeTempCoord.x - uavStatus.nX);
+                    weUavDisY =abs(uavWeTempCoord.y - uavStatus.nY);
+
+                    if(weUavDisX<3&&weUavDisY<3)//2*2以内
+                    {
+                        if(m_weUavNowPiont[uavWeIDTemp].x == uavStatus.nX || m_weUavNowPiont[uavWeIDTemp].y == uavStatus.nX)//无人机相临
+                        {
+                            weUavDisX =abs(uavWeTempCoord.x - m_weUavNowPiont[uavWeIDTemp].x);//该无人机有无走斜线
+                            weUavDisY =abs(uavWeTempCoord.y - m_weUavNowPiont[uavWeIDTemp].y);
+                            if(weUavDisX==1&&weUavDisY==1)//该无人机走的斜线
+                            {
+                                if(uavStatus.nX == m_weUavNowPiont[uavWeIDTemp].x)
+                                {
+                                    weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,m_weUavNowPiont[uavWeIDTemp].y));
+                                }
+                                if(uavStatus.nY == m_weUavNowPiont[uavWeIDTemp].y)
+                                {
+                                    weUavObstaclePos.push_back(make_pair(m_weUavNowPiont[uavWeIDTemp].x,uavWeTempCoord.y));
+                                }
+                            }
+                        }
+                        weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,uavWeTempCoord.y));
+                    }
+                }
+
+            }
+        }
 
     }else//攻击机模式下，不避开敌方无人机，需要避开我方无人机
     {
@@ -158,9 +207,9 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         }
     }
 
-    if(m_uavTask[uavID].taskState == UAV_STATE_BACK_CHARGE)
+    if(m_uavTask[uavID].taskState == UAV_STATE_BACK_CHARGE)//当前飞机需要回家充电
     {
-        if(isUavInHome(uavStatus.nX,uavStatus.nY)==1 && uavStatus.nZ>0)
+        if(isUavInHome(uavStatus.nX,uavStatus.nY)==1 && uavStatus.nZ>0)//
         {
             if(m_uavTask[uavID].uavHomeStatus == UAV_NOT_IN_QUEUE)
             {
@@ -194,11 +243,11 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         }else
         {
             vector<pair<int, int>> obstaclePos;
-            if(uavStatus.nZ>=minFlyHeight)//jisuan lujing
+            if(uavStatus.nZ>minFlyHeight)//jisuan lujing
             {
                 vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
                                                               make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
-                                                              uavStatus.nZ,obstaclePos);
+                                                              uavStatus.nZ,weUavObstaclePos);
 
 
                 if(path.size()>1)
@@ -260,7 +309,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         {
             vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
                                                           make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
-                                                          uavStatus.nZ,obstaclePos);
+                                                          uavStatus.nZ,weUavObstaclePos);
 
 
             if(path.size()>1)
@@ -295,8 +344,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         }
     }
 
-
-
+    m_weUavNextPiont[uavID] = m_uavTask[uavID].nextLocation;//更新我方无人机下一步的位置
 }
 
 void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
@@ -593,9 +641,9 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                         if(uavEnemyStatus.nLoadWeight == enemyUavWeightTemp)//找到一个
                         {
                             cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
-                            m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
-                            m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
-                            m_uavTask[uavID].enemyNo   = uavEnemyId;
+                           // m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
+                           // m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
+                           // m_uavTask[uavID].enemyNo   = uavEnemyId;
                             break;
                         }
                     }
