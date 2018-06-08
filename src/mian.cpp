@@ -144,7 +144,7 @@ void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_
 
     uavTask->uavTaskProcess(pstMatch);
 
-    cout<<"currenttime= "<<newstate->getCurrentTime()<<endl;
+    //cout<<"currenttime= "<<newstate->getCurrentTime()<<endl;
   
 
 
@@ -385,7 +385,9 @@ int main(int argc, char *argv[])
         // 进行当前时刻的数据计算, 填充飞行计划结构体，注意：0时刻不能进行移动，即第一次进入该循环时
         if (pstMatchStatus->nTime != 0)
         {
-            for (int i = 0; i < pstMapInfo->nUavNum; i++)
+            pstFlayPlane->nPurchaseNum=0;
+            pstFlayPlane->nUavNum = pstMatchStatus->nUavWeNum;
+            for (int i = 0; i < pstMatchStatus->nUavWeNum; i++)
             {
                 pstFlayPlane->astUav[i].nStatus = UAV_CRASH;
             }

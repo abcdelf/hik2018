@@ -8,6 +8,7 @@
 #include <math.h>
 #include <queue>
 #include <assert.h>
+#include <cstring>
 
 #include "search.h"
 
@@ -21,6 +22,7 @@ enum{
 
 enum{
     UAV_STATE_CHARGE=1,//空闲状态下，涉及到充电，地址分配，任务分配
+    UAV_STATE_BACK_CHARGE,
     UAV_STATE_RAND,
     UAV_STATE_TRACK,
     UAV_GOOD_TO_GET,
@@ -82,7 +84,7 @@ class UAV_TASK{
     void uavTaskInIDEL(int uavID, UAV uavStatus);
     void uavChargeProcess(int uavID, UAV uavStatus);
 
-
+    void uavPurchase(void);
 
     map<int, UAV> m_weUavID;
     map<int, int> m_uavPlanID;
@@ -96,7 +98,16 @@ class UAV_TASK{
 
     map<int , uavTask_t> m_uavTask;//link the uav ID with uav Task
 
+
+
     vector<UAV> uavOutHomeQueue;
+    vector<UAV> uavBackHomeQueue;
+
+    int m_weMoney;
+    int m_enemyUavNum;
+    UAV_PRICE m_cheapestUavPrice;
+
+    int m_runTime;
 
     int weHomeX;
     int weHomeY;
@@ -116,7 +127,7 @@ class UAV_TASK{
         {
             return 1;
         }
-        return -1;
+        return 0;
     };
 
 };

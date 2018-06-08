@@ -13,6 +13,8 @@ UAV_TASK::UAV_TASK(MAP_CREATE *m_map_create, FLAY_PLANE* pstFlayPlane, pathSearc
     mapYsize    = m_map_create->getMapYsize() - 1;
     mapZsize    = m_map_create->getMapZsize() - 1;
 
+    m_cheapestUavPrice = m_map_create->getPlaneUavPrice(m_map_create->getMinPlaneWeight());
+
     uavOutHomeQueue.clear();
 }
 
@@ -91,7 +93,13 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
         m_Goods.insert(pair<int,GOODS> (pstMatch->astGoods[i].nNO,pstMatch->astGoods[i]));
 	}	
 
-    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<"; goodsNum="<<m_Goods.size()<<endl;
+    m_weMoney = pstMatch->nWeValue;//更新我方的money
+    m_enemyUavNum = pstMatch->nUavEnemyNum;//更新敌方无人机数量
+    m_runTime = pstMatch->nTime;
+
+    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
+          "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
+          "; m_runTime="<<m_runTime<<endl;
 }
 
 void UAV_TASK::uavRun(int uavID, UAV uavStatus)
@@ -106,13 +114,16 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
 
     if(uavStatus.nZ==0&& isUavInHome(uavStatus.nX,uavStatus.nY)==1)//当前飞机在家
     {
-        if(m_uavTask[uavID].taskState != UAV_STATE_CHARGE)
+        if(m_uavTask[uavID].taskState != UAV_STATE_CHARGE && m_uavTask[uavID].taskState != UAV_STATE_BACK_CHARGE )
         {
             if(m_uavTask[uavID].uavHomeStatus == UAV_NOT_IN_QUEUE)
             {
-                m_uavTask[uavID].uavHomeStatus = UAV_IN_OUT_QUEUE;
-                cout<<"add to uavOutHomeQueue=:"<<uavStatus.nNO<<endl;
-                uavOutHomeQueue.push_back(uavStatus);
+                if(uavBackHomeQueue.empty())
+                {
+                    m_uavTask[uavID].uavHomeStatus = UAV_IN_OUT_QUEUE;
+                    cout<<"add to uavOutHomeQueue=:"<<uavStatus.nNO<<endl;
+                    uavOutHomeQueue.push_back(uavStatus);
+                }
             }
         }
     }else if(m_uavTask[uavID].uavHomeStatus == UAV_IN_OUT_QUEUE)
@@ -135,7 +146,82 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         }
     }
 
+    if(m_uavTask[uavID].taskState == UAV_STATE_BACK_CHARGE)
+    {
+        if(isUavInHome(uavStatus.nX,uavStatus.nY)==1 && uavStatus.nZ>0)
+        {
+            if(m_uavTask[uavID].uavHomeStatus == UAV_NOT_IN_QUEUE)
+            {
+                if(uavOutHomeQueue.empty())
+                {
+                    m_uavTask[uavID].uavHomeStatus = UAV_IN_BACK_QUEUE;
+                    cout<<"add to uavBackHomeQueue _-------------------=:"<<uavStatus.nNO<<endl;
+                    uavBackHomeQueue.push_back(uavStatus);
+                }
+            }
+        }else if(isUavInHome(uavStatus.nX,uavStatus.nY)==1 && uavStatus.nZ==0)
+        {
+            m_uavTask[uavID].taskState = UAV_STATE_CHARGE;
 
+            if(m_uavTask[uavID].uavHomeStatus == UAV_IN_BACK_QUEUE)
+            {
+                m_uavTask[uavID].uavHomeStatus = UAV_NOT_IN_QUEUE;
+                vector<UAV>::iterator it;
+
+                for(it=uavBackHomeQueue.begin();it!=uavBackHomeQueue.end();it++)
+                {
+                    UAV uavTemp = *it;
+                    if(uavTemp.nNO == uavID)
+                    {
+                        cout<<"erase ok uav ID ="<<uavTemp.nNO <<endl;
+                        uavBackHomeQueue.erase(it);
+                        break;
+                    }
+                }
+            }
+        }else
+        {
+            vector<pair<int, int>> obstaclePos;
+            if(uavStatus.nZ>=minFlyHeight)//jisuan lujing
+            {
+                vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
+                                                              make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
+                                                              uavStatus.nZ,obstaclePos);
+
+
+                if(path.size()>1)
+                {
+                  auto p=path.begin();
+
+                  p++;
+                  Node node = *p;
+
+                  m_uavTask[uavID].nextLocation.x = node.x;
+                  m_uavTask[uavID].nextLocation.y = node.y;
+
+                }else if(isUavInHome(uavStatus.nX,uavStatus.nY)!=1)
+                {
+                    if(m_uavTask[uavID].nextLocation.z < MaxFlyHeight)
+                    {
+                        cout<<"uav ID="<<uavID<<" ;no road find, the uav will fly up"<<endl;
+                      m_uavTask[uavID].nextLocation.z ++;
+
+                    }
+                }
+
+            }else{
+                if(isUavInHome(uavStatus.nX,uavStatus.nY)!=1)
+                {
+                    if(m_uavTask[uavID].nextLocation.z < MaxFlyHeight)
+                    {
+                      m_uavTask[uavID].nextLocation.z ++;
+                       cout<<"Z="<<m_uavTask[uavID].nextLocation.z<<endl;
+                    }
+                }
+            }
+        }
+
+    }else
 
 
     if(m_uavTask[uavID].goalLocation.x == uavStatus.nX && \
@@ -175,10 +261,14 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
               m_uavTask[uavID].nextLocation.x = node.x;
               m_uavTask[uavID].nextLocation.y = node.y;
 
-            }else if(m_uavTask[uavID].nextLocation.z < MaxFlyHeight)
+            }else if(isUavInHome(uavStatus.nX,uavStatus.nY)!=1)
             {
-              m_uavTask[uavID].nextLocation.z ++;
+                if(m_uavTask[uavID].nextLocation.z < MaxFlyHeight)
+                {
+                    cout<<"uav ID="<<uavID<<" ;no road find, the uav will fly up"<<endl;
+                  m_uavTask[uavID].nextLocation.z ++;
 
+                }
             }
 
         }else{
@@ -206,13 +296,13 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
         m_uavTask[uavID].taskState = UAV_STATE_RAND;
     }
 
-    if(m_uavTask[uavID].taskState != UAV_STATE_CHARGE)
+    if(m_uavTask[uavID].taskState != UAV_STATE_CHARGE && m_uavTask[uavID].taskState != UAV_STATE_BACK_CHARGE)
     {//飞机不是满电，且没有收到任务，进入充电模式
      //todo... 加入空闲时间判断，一段时间内没有收到任务，也回家
 
         float uavRemainStep = (float)uavStatus.remainElectricity/(float)uavStatus.nLoadWeight;
         if(uavRemainStep < (minFlyHeight*2))//电量不够支撑一上一下，进入充电模式
-            m_uavTask[uavID].taskState = UAV_STATE_CHARGE;
+            m_uavTask[uavID].taskState = UAV_STATE_BACK_CHARGE;
 
         if(uavStatus.remainElectricity < m_mapCreate->getPlaneUavPrice(uavStatus.nLoadWeight).capacity/2)
         {
@@ -220,7 +310,7 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
             if(m_uavTask[uavID].taskInIdelTime>minFlyHeight)
             {
                 m_uavTask[uavID].taskInIdelTime =0;
-                m_uavTask[uavID].taskState = UAV_STATE_CHARGE;
+                m_uavTask[uavID].taskState = UAV_STATE_BACK_CHARGE;
             }
         }
     }
@@ -232,6 +322,14 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
         m_uavTask[uavID].goalLocation.z = 0;
 
 	}
+    if(m_uavTask[uavID].taskState == UAV_STATE_BACK_CHARGE)
+    {
+        m_uavTask[uavID].goalLocation.x = weHomeX;//目标点的坐标
+        m_uavTask[uavID].goalLocation.y = weHomeY;
+        m_uavTask[uavID].goalLocation.z = minFlyHeight+1;
+
+    }
+
     if(m_uavTask[uavID].taskState == UAV_STATE_RAND)//分配随机位置
     {//todo... 随机位置分配，需要优化
         int randX=0;
@@ -486,6 +584,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                             m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
                             m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
                             m_uavTask[uavID].enemyNo   = uavEnemyId;
+                            break;
                         }
                     }
                 }
@@ -493,7 +592,8 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
         }//优先攻击机器规划完成
         if(m_uavTask[uavID].taskClass == UAV_TASK_IDEL)//空闲任务下，规划任务
         {
-            uavTaskAssignGoods(uavID,uavStatus);//调度取货算法，任务切换；如果不满足条件，继续执行IDEL任务
+            if(m_uavTask[uavID].uavHomeStatus != UAV_IN_BACK_QUEUE)// 飞机不在回家队列中
+                uavTaskAssignGoods(uavID,uavStatus);//调度取货算法，任务切换；如果不满足条件，继续执行IDEL任务
         }
     }//空闲任务
     else if(m_uavTask[uavID].taskClass == UAV_TASK_GOODS)//飞机的当前任务为取货状态
@@ -594,6 +694,22 @@ void UAV_TASK::uavChargeProcess(int uavID, UAV uavStatus)//无人机充电
     m_pstFlayPlane->astUav[m_uavPlanID[uavID]].remainElectricity = uavStatus.remainElectricity ;
 }
 
+void UAV_TASK::uavPurchase(void)
+{
+    if(m_weMoney > m_cheapestUavPrice.nValue )
+    {
+        m_pstFlayPlane->nPurchaseNum = 1;
+        strcpy(m_pstFlayPlane->szPurchaseType[0],m_cheapestUavPrice.szType);
+    }
+}
+
+bool sortFromMinToMax(const UAV &a, const UAV &b){//小于比较
+    return a.nZ < b.nZ;
+}
+bool sortFromMaxToMin(const UAV &a, const UAV &b){//大于比较
+    return a.nZ > b.nZ;
+}
+
 void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 {
 //	int         uavIDTemp;
@@ -614,39 +730,119 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 
 
     vector<UAV>::iterator it;
+    int uavOutHomeFlyMaxHeight = MaxFlyHeight;
 
-    cout<<"uavOutHomeQueue="<<uavOutHomeQueue.size()<<endl;
-    for(it=uavOutHomeQueue.begin();it!=uavOutHomeQueue.end();it++)
+    cout<<"uavOutHomeQueue="<<uavOutHomeQueue.size()<<" ;uavBackHomeQueue="<<uavBackHomeQueue.size()<<endl;
+    if(!uavOutHomeQueue.empty() && !uavBackHomeQueue.empty())
     {
+        //todo ... when go in this funtion , show that there maybe happened some problems
         UAV uavStatusTemp;
-        uavStatusTemp = *it;
+        sort(uavBackHomeQueue.begin(),uavBackHomeQueue.end(),sortFromMaxToMin);//按Z从大到小排序
 
-        map<int,UAV>::iterator its;
-        its=m_weUavID.find(uavStatusTemp.nNO);
-        if(its==m_weUavID.end())
+        for(it=uavBackHomeQueue.begin();it!=uavBackHomeQueue.end();it++)
         {
-            uavOutHomeQueue.erase(it);
-            cout<<"Clear Uav in Home ------"<<endl;
-            break;
-        }else{
 
-            if(m_weUavID[uavStatusTemp.nNO].nZ <MaxFlyHeight)
+            uavStatusTemp = *it;
+
+            map<int,UAV>::iterator its;
+            its=m_weUavID.find(uavStatusTemp.nNO);
+            if(its==m_weUavID.end())
             {
-                m_uavTask[uavStatusTemp.nNO].nextLocation.z++;
-                cout<<"Z="<<m_uavTask[0].nextLocation.z<<endl;
-               cout<<"here ok"<<endl;
-//                m_pstFlayPlane->astUav[m_uavPlanID[uavStatusTemp.nNO]].nZ++ ;
-            }else{
+                uavBackHomeQueue.erase(it);
+                cout<<"Clear Uav in Home BACK queue------"<<endl;
                 break;
-            }
+            }else{
+                if(m_weUavID[uavStatusTemp.nNO].nZ <MaxFlyHeight)
+                {
+                    m_uavTask[uavStatusTemp.nNO].nextLocation.z++;
+                    cout<<"ID="<<uavStatusTemp.nNO<<"; Now Z:="<<m_weUavID[uavStatusTemp.nNO].nZ <<"; Next Z="<<m_uavTask[uavStatusTemp.nNO].nextLocation.z<<endl;
+                    cout<<"here back uav fly up ok"<<endl;
+    //                m_pstFlayPlane->astUav[m_uavPlanID[uavStatusTemp.nNO]].nZ++ ;
+                }else{
+                    break;
+                }
 
-            if(m_weUavID[uavStatusTemp.nNO].nZ == 0)
+                if(m_weUavID[uavStatusTemp.nNO].nZ == 0)
+                {
+                   break;
+                }
+
+            }
+        }
+        uavStatusTemp = *prev(uavBackHomeQueue.end());
+        uavOutHomeFlyMaxHeight = m_uavTask[uavStatusTemp.nNO].nextLocation.z-1;
+
+    }//else
+    {
+        if(!uavOutHomeQueue.empty())//出家队列,优先出家
+        {
+
+            for(it=uavOutHomeQueue.begin();it!=uavOutHomeQueue.end();it++)
             {
-               break;
+                UAV uavStatusTemp;
+                uavStatusTemp = *it;
+
+                map<int,UAV>::iterator its;
+                its=m_weUavID.find(uavStatusTemp.nNO);
+                if(its==m_weUavID.end())
+                {
+                    uavOutHomeQueue.erase(it);
+                    cout<<"Clear Uav in Home ------"<<endl;
+                    break;
+                }else{
+
+                    if(m_weUavID[uavStatusTemp.nNO].nZ < uavOutHomeFlyMaxHeight)
+                    {
+                        m_uavTask[uavStatusTemp.nNO].nextLocation.z++;
+                        cout<<"ID="<<uavStatusTemp.nNO<<"; Now Z:="<<m_weUavID[uavStatusTemp.nNO].nZ <<"; Next Z="<<m_uavTask[uavStatusTemp.nNO].nextLocation.z<<endl;
+                        cout<<"here ok"<<endl;
+        //                m_pstFlayPlane->astUav[m_uavPlanID[uavStatusTemp.nNO]].nZ++ ;
+                    }else{
+                        break;
+                    }
+
+                    if(m_weUavID[uavStatusTemp.nNO].nZ == 0)
+                    {
+                       break;
+                    }
+                }
+            }
+        }else if(!uavBackHomeQueue.empty())//进家队列
+        {
+            sort(uavBackHomeQueue.begin(),uavBackHomeQueue.end(),sortFromMinToMax);//整理，按Z从小到大排序
+
+            for(it=uavBackHomeQueue.begin();it!=uavBackHomeQueue.end();it++)
+            {
+                UAV uavStatusTemp;
+                uavStatusTemp = *it;
+
+                map<int,UAV>::iterator its;
+                its=m_weUavID.find(uavStatusTemp.nNO);
+                if(its==m_weUavID.end())
+                {
+                    uavBackHomeQueue.erase(it);
+                    cout<<"Clear Uav in Home BACK queue------"<<endl;
+                    break;
+                }else{
+
+                    if(m_weUavID[uavStatusTemp.nNO].nZ >0)
+                    {
+                        m_uavTask[uavStatusTemp.nNO].nextLocation.z--;
+                      //  cout<<"Z="<<m_uavTask[0].nextLocation.z<<endl;
+                      //  cout<<"here ok"<<endl;
+        //                m_pstFlayPlane->astUav[m_uavPlanID[uavStatusTemp.nNO]].nZ++ ;
+                    }else{
+                     //   break;
+                    }
+
+                    if(m_weUavID[uavStatusTemp.nNO].nZ == 0)
+                    {
+                      // break;
+                    }
+                }
             }
         }
     }
-
 
     for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
     {
@@ -655,9 +851,22 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 
         if(m_uavTask[uavIdTemp].nextLocation.z != uavStatusTemp.nZ)
         {
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = uavStatusTemp.nX;
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = uavStatusTemp.nY;
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+            if(uavStatusTemp.nZ < minFlyHeight)
+            {
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = uavStatusTemp.nX;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = uavStatusTemp.nY;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+            }else if(m_uavTask[uavIdTemp].nextLocation.x != uavStatusTemp.nX || m_uavTask[uavIdTemp].nextLocation.y != uavStatusTemp.nY)
+            {
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = m_uavTask[uavIdTemp].nextLocation.y;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = uavStatusTemp.nZ;
+            }else
+            {
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = m_uavTask[uavIdTemp].nextLocation.y;
+                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+            }
 
         }else{
             m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
@@ -696,11 +905,22 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
                 cout<<"next Z="<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ<<" ;uavStatusTemp.nZ="<< uavStatusTemp.nZ<<endl;
             }
         }
+
+        if(m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<0)//临界植判断
+            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity=0;
         //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<<endl;
 
 
 
     }
+
+    uavPurchase();
+
+    //todo ... 在发送给服务器数据之前，做最后的数据校验，判断数据是否越界、不符合规范
+
+
+
+
     //cout<<"end ok"<<endl;
 //	for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
 //	{
