@@ -112,6 +112,18 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
     m_uavTask[uavID].nowLocation.y=uavStatus.nY;
     m_uavTask[uavID].nowLocation.z=uavStatus.nZ;
 
+    if(m_uavTask[uavID].taskClass != UAV_TASK_TRACK)// 普通模式下，避开敌方无人机，避开我方无人机
+    {
+
+    }else//攻击机模式下，不避开敌方无人机，需要避开我方无人机
+    {
+
+    }
+
+    //todo ...
+    //添加我方无人机障碍点
+
+
     if(uavStatus.nZ==0&& isUavInHome(uavStatus.nX,uavStatus.nY)==1)//当前飞机在家
     {
         if(m_uavTask[uavID].taskState != UAV_STATE_CHARGE && m_uavTask[uavID].taskState != UAV_STATE_BACK_CHARGE )
