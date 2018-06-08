@@ -27,6 +27,9 @@ enum{
     UAV_STATE_TRACK,
     UAV_GOOD_TO_GET,
     UAV_GOOD_TO_PUT,
+
+    UAV_HAS_RAND_ROAD,
+    UAV_NO_RAND_ROAD,
 };
 
 enum{

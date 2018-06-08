@@ -439,8 +439,10 @@ int main(int argc, char *argv[])
     free(pRecvBuffer);
     free(pSendBuffer);
     free(pstMapInfo);
-    free(mymap);
-    free(matchstate);
+    delete mymap;
+    delete matchstate;
+    delete mpathSearch;
+    delete uavTask;
 
     return 0;
 }
