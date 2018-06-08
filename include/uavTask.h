@@ -87,6 +87,8 @@ class UAV_TASK{
     void uavTaskInIDEL(int uavID, UAV uavStatus);
     void uavChargeProcess(int uavID, UAV uavStatus);
 
+    void uavTaskTrackEnemy(int uavID, UAV uavStatus);
+
     void uavPurchase(void);
 
     map<int, UAV> m_weUavID;

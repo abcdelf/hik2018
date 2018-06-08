@@ -134,60 +134,60 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
     int DontMoveStatus=0;
     if(m_uavTask[uavID].taskClass != UAV_TASK_TRACK)// 普通模式下，避开敌方无人机，避开我方无人机
     {
-        //我方无人机障碍
-        int uavWeIDTemp =0;
-        uavCoord_t uavWeTempCoord;
-        int weUavDisX=0;
-        int weUavDisY=0;
-        for(map<int,uavCoord_t>::iterator it= m_weUavNextPiont.begin(); it!= m_weUavNextPiont.end(); it++)//扁历存在的ID
-        {
-            uavWeIDTemp      = it->first;
-            uavWeTempCoord   = it->second;
-            if(uavWeIDTemp != uavID)
-            {
-                if(uavWeTempCoord.z == uavStatus.nZ)
-                {
-                    weUavDisX =abs(uavWeTempCoord.x - uavStatus.nX);
-                    weUavDisY =abs(uavWeTempCoord.y - uavStatus.nY);
 
-                    if(weUavDisX<4&&weUavDisY<4)//2*2以内
-                    {
-                        if(m_weUavNowPiont[uavWeIDTemp].x == uavStatus.nX || m_weUavNowPiont[uavWeIDTemp].y == uavStatus.nX)//无人机相临
-                        {
-                            weUavDisX =abs(uavWeTempCoord.x - m_weUavNowPiont[uavWeIDTemp].x);//该无人机有无走斜线
-                            weUavDisY =abs(uavWeTempCoord.y - m_weUavNowPiont[uavWeIDTemp].y);
-                            if(weUavDisX==1&&weUavDisY==1)//该无人机走的斜线
-                            {
-                                cout<<"uav xiexian ----+++"<<endl;
-                                if(uavStatus.nX == m_weUavNowPiont[uavWeIDTemp].x && abs(uavStatus.nY - m_weUavNowPiont[uavWeIDTemp].y)==1)
-                                {
-                                    cout<<"uav xiexian xxxxxx = "<<uavID<<" ; "<<endl;
-                                    DontMoveStatus = 1;
-                                   //weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,m_weUavNowPiont[uavWeIDTemp].y));
-                                }
-                                if(uavStatus.nY == m_weUavNowPiont[uavWeIDTemp].y && abs(uavStatus.nX - m_weUavNowPiont[uavWeIDTemp].x)==1)
-                                {
-                                    cout<<"uav xiexian yyyyy"<<uavID<<" ; "<<endl;
-                                    // weUavObstaclePos.push_back(make_pair(m_weUavNowPiont[uavWeIDTemp].x,uavWeTempCoord.y));
-                                    DontMoveStatus = 1;
-
-                                }
-                            }
-                        }
-                        if(uavID == 25)
-                            cout<<"******************----------------------****************** === "<<uavID<<"   ;  DontMoveStatus="<<DontMoveStatus<<endl;
-                        weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,uavWeTempCoord.y));
-                    }
-                }
-
-            }
-        }
 
     }else//攻击机模式下，不避开敌方无人机，需要避开我方无人机
     {
 
     }
+    //我方无人机障碍
+    int uavWeIDTemp =0;
+    uavCoord_t uavWeTempCoord;
+    int weUavDisX=0;
+    int weUavDisY=0;
+    for(map<int,uavCoord_t>::iterator it= m_weUavNextPiont.begin(); it!= m_weUavNextPiont.end(); it++)//扁历存在的ID
+    {
+        uavWeIDTemp      = it->first;
+        uavWeTempCoord   = it->second;
+        if(uavWeIDTemp != uavID)
+        {
+            if(uavWeTempCoord.z == uavStatus.nZ)
+            {
+                weUavDisX =abs(uavWeTempCoord.x - uavStatus.nX);
+                weUavDisY =abs(uavWeTempCoord.y - uavStatus.nY);
 
+                if(weUavDisX<4&&weUavDisY<4)//2*2以内
+                {
+                    if(m_weUavNowPiont[uavWeIDTemp].x == uavStatus.nX || m_weUavNowPiont[uavWeIDTemp].y == uavStatus.nX)//无人机相临
+                    {
+                        weUavDisX =abs(uavWeTempCoord.x - m_weUavNowPiont[uavWeIDTemp].x);//该无人机有无走斜线
+                        weUavDisY =abs(uavWeTempCoord.y - m_weUavNowPiont[uavWeIDTemp].y);
+                        if(weUavDisX==1&&weUavDisY==1)//该无人机走的斜线
+                        {
+                            cout<<"uav xiexian ----+++"<<endl;
+                            if(uavStatus.nX == m_weUavNowPiont[uavWeIDTemp].x && abs(uavStatus.nY - m_weUavNowPiont[uavWeIDTemp].y)==1)
+                            {
+                                cout<<"uav xiexian xxxxxx = "<<uavID<<" ; "<<endl;
+                                DontMoveStatus = 1;
+                               //weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,m_weUavNowPiont[uavWeIDTemp].y));
+                            }
+                            if(uavStatus.nY == m_weUavNowPiont[uavWeIDTemp].y && abs(uavStatus.nX - m_weUavNowPiont[uavWeIDTemp].x)==1)
+                            {
+                                cout<<"uav xiexian yyyyy"<<uavID<<" ; "<<endl;
+                                // weUavObstaclePos.push_back(make_pair(m_weUavNowPiont[uavWeIDTemp].x,uavWeTempCoord.y));
+                                DontMoveStatus = 1;
+
+                            }
+                        }
+                    }
+                    if(uavID == 25)
+                        cout<<"******************----------------------****************** === "<<uavID<<"   ;  DontMoveStatus="<<DontMoveStatus<<endl;
+                    weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,uavWeTempCoord.y));
+                }
+            }
+
+        }
+    }
     //todo ...
     //添加我方无人机障碍点
 
@@ -445,7 +445,8 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
     }
 
     if(m_uavTask[uavID].taskState == UAV_STATE_RAND)//分配随机位置
-    {//todo... 随机位置分配，需要优化
+    {//todo... 随机位置分配，需要优化,
+        //todo ... 6.8:需要判断随机位置是否已经分配给其他飞机了
         //if(m_uavTask[uavID].randLocationState == UAV_NO_RAND_ROAD)
         if(isUavInHome(uavStatus.nX, uavStatus.nY) == 1)
         {
@@ -517,40 +518,6 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
         }
         // cout<<"Rand Location, uav ID="<<uavID<<"; rand :x="<<m_uavTask[uavID].goalLocation.x<<";y="<<m_uavTask[uavID].goalLocation.y<<endl;
 
-//        if(uavStatus.nZ<m_mapCreate->getMaxFlyHeight())//在最低高度以下
-//        {
-
-//            int nextZ = m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nZ+1;
-//            UAV         m_UavStatusTemp;
-//            int         m_UavIDTemp;
-//            for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
-//            {
-//                m_UavStatusTemp = it->second;
-//                m_UavIDTemp 	= it->first;
-//                if(m_UavIDTemp != uavID)
-//                {
-//                    if(m_UavStatusTemp.nX == uavStatus.nX && m_UavStatusTemp.nY == uavStatus.nY )
-//                    {
-//                        if(nextZ == m_pstFlayPlane->astUav[m_uavPlanID[m_UavIDTemp]].nZ)
-//                        {
-//                            if(nextZ>=1)
-//                                nextZ--;
-//                            break;
-//                        }
-//                    }
-//                }
-				
-
-//            }
-//            m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nZ = nextZ;
-//        }else{//达到飞行高度
-//            //根据目标点，运行路径规划
-//            //cout<<"maxHeightFly"<<m_mapCreate->getMaxFlyHeight()<<" ;MYnZ="<<m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nZ<<endl;
-//            if(m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nX<mapXsize)
-//                m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nX++;
-//            if(m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nY<mapYsize)
-//                m_pstFlayPlane->astUav[m_uavPlanID[uavID]].nY++;
-//        }
 	}
 }
 
@@ -704,10 +671,11 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                     {
                         if(uavEnemyStatus.nLoadWeight == enemyUavWeightTemp)//找到一个
                         {
-                           // cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
-//                            m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
-//                            m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
-//                            m_uavTask[uavID].enemyNo   = uavEnemyId;
+                            cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
+                            m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
+                            m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
+                            m_uavTask[uavID].taskState = UAV_STATE_RAND;
+                            m_uavTask[uavID].enemyNo   = uavEnemyId;
                             break;
                         }
                     }
@@ -759,6 +727,29 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
     }
 }
 
+
+void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无人机的目标点
+{
+    int enemyIdTemp = m_uavTask[uavID].enemyNo;
+    if(enemyIdTemp!=-1)
+    {
+        UAV enemyUavStatus = m_enemyUavID[enemyIdTemp];
+        if(enemyUavStatus.nStatus!=UAV_FOG && enemyUavStatus.nStatus!=UAV_CRASH)
+        {
+            if(enemyUavStatus.nZ !=-1)
+            {
+                m_uavTask[uavID].goalLocation.x = enemyUavStatus.nX;//
+                m_uavTask[uavID].goalLocation.y = enemyUavStatus.nY;
+                m_uavTask[uavID].goalLocation.z = enemyUavStatus.nZ;
+            }
+        }
+    }else
+    {
+        m_uavTask[uavID].taskClass = UAV_TASK_IDEL;
+        m_uavTask[uavID].taskState = UAV_STATE_RAND;
+    }
+}
+
 void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
 {
 	uavTask_t   m_UavTaskTemp;
@@ -788,7 +779,7 @@ void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
             uavTaskInGoods(uavID,uavStatus);
 			break;
 		case UAV_TASK_TRACK:
-
+            uavTaskTrackEnemy(uavID,uavStatus);
 			break;
 		
 		default:
@@ -836,7 +827,42 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 
     this->updateUavStatus(pstMatch);//更新飞行器状态
 
+    int cycle=1;
+    while(cycle ==1)
+    {
+        cycle=0;
+        for(map<int,int>::iterator it= m_uavTrackID.begin(); it!= m_uavTrackID.end(); it++)//判断跟踪列表中，敌方无人机的ID 号是否存在
+        {
+            int uavEnemyId = it->first;
+            int uavWeIdTemp    = it->second;
 
+            map<int,UAV>::iterator its,weIts;
+            its=m_enemyUavID.find(uavEnemyId);//判断列表中的敌方飞机的ID是否存在
+            if(its==m_enemyUavID.end())//敌方无人机已经坠毁
+            {
+                cycle = 1;
+                //释放我方跟踪无人机
+                weIts = m_weUavID.find(uavWeIdTemp);
+                if(weIts!=m_weUavID.end()) //我方无人机存在，清除任务
+                {
+                    m_uavTask[uavWeIdTemp].taskClass = UAV_TASK_IDEL;
+                    m_uavTask[uavWeIdTemp].enemyNo   = -1;
+                }
+
+                m_uavTrackID.erase(it);
+                break;
+            }else//敌方无人机存在，需要判断我方无人机是否存在
+            {
+                weIts = m_weUavID.find(uavWeIdTemp);
+                if(weIts==m_weUavID.end()) //我方无人机不存在，清除关联
+                {
+                    cycle = 1;
+                    m_uavTrackID.erase(it);
+                    break;
+                }
+            }
+        }
+    }
 
 	for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID 
 	{
