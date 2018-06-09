@@ -69,7 +69,7 @@ class UAV_TASK{
     void setUavTaskWithID(int uavID, uavTask_t uavTask);
     void clearUavTaskWithID(int uavID);
     int isUavTaskAvailbal(int uavID);
-
+    void findEnemyHome(MATCH_STATUS *pstMatch);
 
 
     void updateUavStatus(MATCH_STATUS * pstMatch);
@@ -127,6 +127,10 @@ class UAV_TASK{
     int minFlyHeight;
     int MaxFlyHeight;
 
+    int enemyUavHomeX;
+    int enemyUavHomeY;
+
+    int isJustStart;
     #define random(x) (rand()%x)
 
     int isUavInHome(int uavX, int uavY)
