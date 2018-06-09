@@ -158,7 +158,7 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
 
     cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
           "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
-          "; m_runTime="<<m_runTime<<endl;
+          "; m_runTime="<<m_runTime<<" ; ";
 
 }
 
@@ -620,7 +620,7 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
     {//todo... 随机位置分配，需要优化,
         //todo ... 6.8:需要判断随机位置是否已经分配给其他飞机了
         //if(m_uavTask[uavID].randLocationState == UAV_NO_RAND_ROAD)
-        if(isUavInHome(uavStatus.nX, uavStatus.nY) == 1)
+        //if(isUavInHome(uavStatus.nX, uavStatus.nY) == 1)
         {
             int randX=0;
             int randY=0;
@@ -687,11 +687,11 @@ void UAV_TASK::uavTaskInIDEL(int uavID, UAV uavStatus)
                 }
             }while(m_mapCreate->get_mappoint(randX,randY,randZ)==1);
 
-        }else
+        }/*else
         {
             if(uavStatus.nZ<minFlyHeight)
                 m_uavTask[uavID].goalLocation.z = minFlyHeight - 1;
-        }
+        }*/
         // cout<<"Rand Location, uav ID="<<uavID<<"; rand :x="<<m_uavTask[uavID].goalLocation.x<<";y="<<m_uavTask[uavID].goalLocation.y<<endl;
 
 	}
@@ -850,11 +850,11 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                     {
                         if(uavEnemyStatus.nLoadWeight == enemyUavWeightTemp)//找到一个
                         {
-                            cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
-                            m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
-                            m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
-                            m_uavTask[uavID].taskState = UAV_STATE_RAND;
-                            m_uavTask[uavID].enemyNo   = uavEnemyId;
+ //                           cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
+//                            m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
+//                            m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
+//                            m_uavTask[uavID].taskState = UAV_STATE_RAND;
+//                            m_uavTask[uavID].enemyNo   = uavEnemyId;
                             break;
                         }
                     }
@@ -1228,6 +1228,75 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 //        uavOutHomeFlyMaxHeight = m_uavTask[uavStatusTemp.nNO].nextLocation.z-1;
 
 //    }//else
+    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID//判断我方飞机是否会相撞
+    {
+        int uavIdNow     = it->first;
+        //UAV uavStatusNow = it->second;
+
+        uavTask_t uavTaskNow = m_uavTask[uavIdNow];
+        //if((uavTaskNow.nextLocation.x != weHomeX)&&(uavTaskNow.nextLocation.y != weHomeY))
+        if(uavTaskNow.nextLocation.x != uavTaskNow.nowLocation.x||uavTaskNow.nextLocation.y != uavTaskNow.nowLocation.y||uavTaskNow.nextLocation.z != uavTaskNow.nowLocation.z)//当前无人机位置发生了变化
+        {
+            for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+            {
+                int uavIdCycle     = it->first;
+                //UAV uavStatusCyCle = it->second;
+                uavTask_t uavTaskCycle = m_uavTask[uavIdCycle];
+                if(uavIdCycle!=uavIdNow)
+                {
+                    if(uavTaskNow.nextLocation.x == uavTaskCycle.nextLocation.x&&\
+                            uavTaskNow.nextLocation.y == uavTaskCycle.nextLocation.y&&\
+                            uavTaskNow.nextLocation.z == uavTaskCycle.nextLocation.z)
+                    {
+                        m_uavTask[uavIdNow].nextLocation = m_uavTask[uavIdNow].nowLocation;
+                        break;
+                    }else
+                    {
+
+                        int weUavDisX=0;
+                        int weUavDisY=0;
+
+                        if((uavTaskNow.nextLocation.x == uavTaskCycle.nowLocation.x&&\
+                            uavTaskNow.nextLocation.y == uavTaskCycle.nowLocation.y&&\
+                            uavTaskNow.nextLocation.z == uavTaskCycle.nowLocation.z)&& (\
+                                    uavTaskNow.nowLocation.x == uavTaskCycle.nextLocation.x&&\
+                                    uavTaskNow.nowLocation.y == uavTaskCycle.nextLocation.y&&\
+                                    uavTaskNow.nowLocation.z == uavTaskCycle.nextLocation.z))//位置互换了
+                        {
+                            m_uavTask[uavIdNow].nextLocation = m_uavTask[uavIdNow].nowLocation;
+                            break;
+                        }else if(uavTaskNow.nextLocation.z == uavTaskCycle.nextLocation.z)
+                        {
+                            weUavDisX = abs(uavTaskNow.nextLocation.x - uavTaskNow.nowLocation.x);
+                            weUavDisY = abs(uavTaskNow.nextLocation.y - uavTaskNow.nowLocation.y);
+                            if(weUavDisX==1 && weUavDisY==1)//该无人机走的斜线
+                            {
+                                weUavDisX = abs(uavTaskNow.nextLocation.x - uavTaskCycle.nextLocation.x);
+                                weUavDisY = abs(uavTaskNow.nextLocation.y - uavTaskCycle.nextLocation.y);
+                                if(weUavDisX<=1&&weUavDisY<=1)
+                                {
+                                    weUavDisX = abs(uavTaskCycle.nextLocation.x - uavTaskCycle.nowLocation.x);
+                                    weUavDisY = abs(uavTaskCycle.nextLocation.y - uavTaskCycle.nowLocation.y);
+                                    if(weUavDisX==1 && weUavDisY==1)
+                                    {
+                                        m_uavTask[uavIdNow].nextLocation = m_uavTask[uavIdNow].nowLocation;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+
+
+
+                    }
+                }
+
+            }
+        }
+
+    }
+
 
     uavOutHomeFlyMaxHeight = minFlyHeight;
     {
@@ -1365,6 +1434,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             }
         }
     }
+
 
     for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
     {
