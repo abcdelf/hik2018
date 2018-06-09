@@ -118,10 +118,11 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
     m_weMoney = pstMatch->nWeValue;//更新我方的money
     m_enemyUavNum = pstMatch->nUavEnemyNum;//更新敌方无人机数量
     m_runTime = pstMatch->nTime;
-
-    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
-          "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
-          "; m_runTime="<<m_runTime<<endl;
+/*
+//    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
+//          "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
+//          "; m_runTime="<<m_runTime<<endl;
+*/
 }
 
 void UAV_TASK::uavRun(int uavID, UAV uavStatus)
@@ -253,6 +254,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
                     weUavObstaclePos.push_back(make_pair(uavWeTempCoord.x,uavWeTempCoord.y));
                 }
             }
+/*
 //            if(isUavInHome(uavStatus.nX,uavStatus.nY)!=1)//不在家的位置上// 放在最后的策略调整上//需要测试，什么原因导致任务分配失败
 //            {
 //                if(m_uavTask[uavID].taskClass == UAV_TASK_TRACK)
@@ -293,7 +295,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
 //                        }
 //                    }
 //                }
-//            }
+//            }*/
 
         }
     }
@@ -479,15 +481,17 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
 
         }else{
             vector<pair<int, int>> obstaclePos;
+            cout<<"asasa --";
             if(uavStatus.nZ>=minFlyHeight)//jisuan lujing
             {
                 if(needMoveAwayEnwmy==0)
                 {
+                    cout<<"; test start;"<<endl;
                     vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
                                                                   make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
                                                                   uavStatus.nZ,weUavObstaclePos);
 
-
+                    cout<<"; test ok;"<<endl;
                     if(path.size()>1)
                     {
                       auto p=path.begin();
@@ -863,9 +867,14 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
 void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无人机的目标点
 {
     int enemyIdTemp = m_uavTask[uavID].enemyNo;
-    if(enemyIdTemp!=-1)
+    cout<<"enemy ID =:"<<m_uavTask[uavID].enemyNo<<"; "<<"me UAV Z= "<<uavStatus.nZ<<"; min = "\
+       <<minFlyHeight<<"m_uavTaskation.x "<<m_uavTask[uavID].goalLocation.x <<"; ";
+    if(m_uavTask[uavID].enemyNo >=0)
     {
+        cout<<"enemycc =:"<<"; ";
         UAV enemyUavStatus = m_enemyUavID[enemyIdTemp];
+        cout<<"enemy x =:"<< enemyUavStatus.nX<<"; "<<endl;
+
         if(enemyUavStatus.nStatus!=UAV_FOG && enemyUavStatus.nStatus!=UAV_CRASH)
         {
             if(enemyUavStatus.nZ !=-1)
@@ -875,16 +884,17 @@ void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无�
                 m_uavTask[uavID].goalLocation.z = enemyUavStatus.nZ;
             }
         }
-    }else
+    }/*else
     {
         m_uavTask[uavID].taskClass = UAV_TASK_IDEL;
         m_uavTask[uavID].taskState = UAV_STATE_RAND;
-    }
+    }*/
 }
 
 void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
 {
 	uavTask_t   m_UavTaskTemp;
+    cout<<"0 = vvv; ";
 	if(this->isUavTaskAvailbal(uavID)!=1)//不存在uav task，飞机首次出现，初始化
 	{
         m_UavTaskTemp.taskClass = UAV_TASK_IDEL;
@@ -894,12 +904,17 @@ void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
         m_UavTaskTemp.taskInIdelTime = 0;
         m_UavTaskTemp.uavHomeStatus = UAV_NOT_IN_QUEUE;
         m_UavTaskTemp.randLocationState = UAV_NO_RAND_ROAD;
+        m_UavTaskTemp.goalLocation.x      =  0;
+        m_UavTaskTemp.goalLocation.y      =  0;
+        m_UavTaskTemp.goalLocation.z      =  0;
 		this->setUavTaskWithID(uavID,m_UavTaskTemp);
 	}
 
 	//need todo ...
-
+    cout<<"1 = xxx  ; ";
     uavTaskAssign(uavID, uavStatus);
+
+    cout<<"2 = aa  ;  ";
 
 	//在运行任务之前，需要运行分配算法
 	switch(m_uavTask[uavID].taskClass)
@@ -926,10 +941,10 @@ void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
             cout<< "there has none TASK CLASS, maybe has problem!!! ="<<m_uavTask[uavID].taskClass<<" ;----"<<endl;
 			break;
 	}
-
+    cout<<" 3=   bbbbb  ;";
     uavRun(uavID,uavStatus);
     //uavChargeProcess(uavID,uavStatus);
-		
+    cout<<" 4 = cccccc "<<endl;
 	
 }
 
@@ -962,16 +977,15 @@ void UAV_TASK::uavPurchase(void)
 
 void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 {
-//	int         uavIDTemp;
-	
+    int trackCycle=1;
 
-    this->updateUavStatus(pstMatch);//更新飞行器状态
+    updateUavStatus(pstMatch);//更新飞行器状态
 
-    cout<<"000000000000"<<endl;
-    int cycle=1;
-    while(cycle ==1)
+    cout<<"000000"<<endl;
+
+    while(trackCycle ==1)
     {
-        cycle=0;
+        trackCycle=0;
         for(map<int,int>::iterator it= m_uavTrackID.begin(); it!= m_uavTrackID.end(); it++)//判断跟踪列表中，敌方无人机的ID 号是否存在
         {
             int uavEnemyId = it->first;
@@ -981,7 +995,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             its=m_enemyUavID.find(uavEnemyId);//判断列表中的敌方飞机的ID是否存在
             if(its==m_enemyUavID.end())//敌方无人机已经坠毁
             {
-                cycle = 1;
+                trackCycle = 1;
                 //释放我方跟踪无人机
                 weIts = m_weUavID.find(uavWeIdTemp);
                 if(weIts!=m_weUavID.end()) //我方无人机存在，清除任务
@@ -997,7 +1011,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
                 weIts = m_weUavID.find(uavWeIdTemp);
                 if(weIts==m_weUavID.end()) //我方无人机不存在，清除关联
                 {
-                    cycle = 1;
+                    trackCycle = 1;
                     m_uavTrackID.erase(it);
                     break;
                 }
@@ -1005,15 +1019,20 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
         }
     }
 
-     cout<<"111111111111"<<endl;
+     cout<<"1111"<<endl;
 	for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID 
 	{
+        cout<<it->first;
+        int uavIdTemp = it->first;
+        UAV uavStatusTemp = it->second;
+        cout<<" ? =  ;";
+        m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]] = uavStatusTemp;
 
-        m_pstFlayPlane->astUav[m_uavPlanID[it->first]] = it->second;
-        uavTaskAllot(it->first,it->second);
+        cout<<"; ! = OOOOOO ;";
+        uavTaskAllot(uavIdTemp,uavStatusTemp);
 
 	}
-
+    cout<<"2222"<<endl;
 
 
     vector<UAV>::iterator it;
@@ -1158,11 +1177,11 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             }
         }
     }
-       cout<<"222222222222222"<<endl;
+   //    cout<<"222222222222222"<<endl;
     for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
     {
         int uavIdNow     = it->first;
-        UAV uavStatusNow = it->second;
+        //UAV uavStatusNow = it->second;
 
         uavTask_t uavTaskNow = m_uavTask[uavIdNow];
 
@@ -1175,7 +1194,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
                     for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
                     {
                         int uavIdCycle     = it->first;
-                        UAV uavStatusCyCle = it->second;
+                        //UAV uavStatusCyCle = it->second;
                         uavTask_t uavTaskCycle = m_uavTask[uavIdCycle];
                         if(uavIdCycle!=uavIdNow)
                         {
