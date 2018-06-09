@@ -106,6 +106,8 @@ class UAV_TASK{
     map<int , uavCoord_t> m_weUavNextPiont;
     map<int , uavCoord_t> m_weUavNowPiont;
 
+    map<int , uavCoord_t> m_enemyUavNowPiont;
+
     vector<UAV> uavOutHomeQueue;
     vector<UAV> uavBackHomeQueue;
 
