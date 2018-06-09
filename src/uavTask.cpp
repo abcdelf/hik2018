@@ -155,11 +155,11 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
     m_weMoney = pstMatch->nWeValue;//更新我方的money
     m_enemyUavNum = pstMatch->nUavEnemyNum;//更新敌方无人机数量
     m_runTime = pstMatch->nTime;
-/*
-//    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
-//          "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
-//          "; m_runTime="<<m_runTime<<endl;
-*/
+
+    cout<<"WeUavNUM="<<m_weUav.size()<<"; enemyUavNum="<<m_enemyUavID.size()<<\
+          "; goodsNum="<<m_Goods.size()<<"; m_weMoney="<<m_weMoney<<"; m_enemyUavNum="<<m_enemyUavNum<<\
+          "; m_runTime="<<m_runTime<<endl;
+
 }
 
 void UAV_TASK::uavRun(int uavID, UAV uavStatus)
@@ -217,7 +217,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
                    goodsStatusTemp = m_Goods[uavStatus.nGoodsNo];
                    goodsValue = goodsStatusTemp.nValue;
                 }
-                int weUavNowValue = uavStatus.nLoadWeight;//*0.6 + uavStatus.remainElectricity*0.01 + goodsValue*0.3;
+                int weUavNowValue = uavStatus.nLoadWeight + goodsValue;//+ uavStatus.remainElectricity*0.01
 
                 goodsValue =0;
                 if(m_enemyUavID[enemyUavIDTemp].nGoodsNo!=-1)
@@ -225,22 +225,22 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
                    goodsStatusTemp = m_Goods[m_enemyUavID[enemyUavIDTemp].nGoodsNo];
                    goodsValue = goodsStatusTemp.nValue;
                 }
-                int enemyUavNowValue = m_enemyUavID[enemyUavIDTemp].nLoadWeight;//*0.6 + m_enemyUavID[enemyUavIDTemp].remainElectricity*0.01 + goodsValue*0.3;
+                int enemyUavNowValue = m_enemyUavID[enemyUavIDTemp].nLoadWeight  + goodsValue;//+ m_enemyUavID[enemyUavIDTemp].remainElectricity*0.01
                 if(weUavNowValue > enemyUavNowValue)//我方无人机价值大于敌方无人机，注意避让敌方无人机
                 {
                      //cout<<"our Uav piont =:("<<uavStatus.nX<<" ,"<<uavStatus.nY<<") "<<endl;
                     // cout<<"add enemey piont =:"<<endl;
-                     needMoveAwayEnwmy = 1;
-//                    for(int m=-1; m<2; m++)
-//                    {
-//                        for(int n=-1; n<2; n++)
-//                        {
-//                            weUavObstaclePos.push_back(make_pair(enemyUavTempCoord.x+n,enemyUavTempCoord.y+m));
-//                      //      cout<<"("<<enemyUavTempCoord.x+n<<" ,"<<enemyUavTempCoord.y+m<<") ";
-//                        }
-//                     //   cout<<endl;
-//                    }
-//                    weUavObstaclePos.push_back(make_pair(enemyUavTempCoord.x,enemyUavTempCoord.y));
+                    // needMoveAwayEnwmy = 1;
+                    for(int m=-1; m<2; m++)
+                    {
+                        for(int n=-1; n<2; n++)
+                        {
+                            weUavObstaclePos.push_back(make_pair(enemyUavTempCoord.x+n,enemyUavTempCoord.y+m));
+                      //      cout<<"("<<enemyUavTempCoord.x+n<<" ,"<<enemyUavTempCoord.y+m<<") ";
+                        }
+                     //   cout<<endl;
+                    }
+                    weUavObstaclePos.push_back(make_pair(enemyUavTempCoord.x,enemyUavTempCoord.y));
 //                    weUavObstaclePos.push_back(make_pair(enemyUavTempCoord.x,enemyUavTempCoord.y));
                 }
             }
@@ -772,8 +772,8 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
                         int left_time = goodsStatus.nLeftTime;
                         if(left_time>uavDisToGetGoods)//剩余时间足够UAV去捡起来货物
                         {
-    //                        uavDisToPutGoods = 2*minFlyHeight + pow(pow(abs(goodsStatus.nEndX - goodsStatus.nStartX), 2) + pow(abs(goodsStatus.nEndY - goodsStatus.nStartY),2),0.5);
-                            uavDisToPutGoods = 2*minFlyHeight + abs(goodsStatus.nEndX - goodsStatus.nStartX) + abs(goodsStatus.nEndY - goodsStatus.nStartY);
+                            uavDisToPutGoods = 2*minFlyHeight + pow(pow(abs(goodsStatus.nEndX - goodsStatus.nStartX), 2) + pow(abs(goodsStatus.nEndY - goodsStatus.nStartY),2),0.5);
+                            //uavDisToPutGoods = 2*minFlyHeight + abs(goodsStatus.nEndX - goodsStatus.nStartX) + abs(goodsStatus.nEndY - goodsStatus.nStartY);
                             float needPower = uavDisToPutGoods * goodsStatus.nWeight;
                             if(needPower < uavStatus.remainElectricity)//无人机电量足够使用
                             {
@@ -939,7 +939,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                             if(enemyUavTempCoord.z<minFlyHeight)
                             {
                                 if((uavStatus.nZ > enemyUavTempCoord.z )&& (uavStatus.nLoadWeight>m_enemyUavID[enemyUavIDTemp].nLoadWeight)\
-                                        &&(uavStatus.nZ> minFlyHeight/2))
+                                        &&(uavStatus.nZ>= minFlyHeight))
                                 {
                                     m_uavTask[uavID].taskClass = UAV_TASK_IDEL;
                                     m_uavTask[uavID].taskState = UAV_STATE_RAND;
