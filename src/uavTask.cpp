@@ -934,23 +934,23 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
 
         if(uavStatus.nLoadWeight == m_mapCreate->getMinPlaneWeight())//最小载重的飞机
         {
-            int enemyUavWeightTemp=0;
-            for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
-            {
-                int uavEnemyId = it->first;
-                UAV uavEnemyStatus = it->second;
+//            int enemyUavWeightTemp=0;
+//            for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
+//            {
+//                int uavEnemyId = it->first;
+//                UAV uavEnemyStatus = it->second;
 
-                map<int,int>::iterator its;
-                its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
+//                map<int,int>::iterator its;
+//                its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
 
-                if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
-                {
-                    if(uavEnemyStatus.nLoadWeight>enemyUavWeightTemp)
-                    {
-                        enemyUavWeightTemp = uavEnemyStatus.nLoadWeight;
-                    }
-                }
-            }
+//                if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
+//                {
+//                    if(uavEnemyStatus.nLoadWeight>enemyUavWeightTemp)
+//                    {
+//                        enemyUavWeightTemp = uavEnemyStatus.nLoadWeight;
+//                    }
+//                }
+//            }
             if(enemyUavWeightTemp != 0)
             {
                 for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
