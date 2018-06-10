@@ -153,6 +153,9 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
 	}	
 
     m_weMoney = pstMatch->nWeValue;//更新我方的money
+    m_enemyMoney = pstMatch->nEnemyValue;
+
+    m_weUavNum     = m_weUav.size();
     m_enemyUavNum = pstMatch->nUavEnemyNum;//更新敌方无人机数量
     m_runTime = pstMatch->nTime;
 
@@ -839,23 +842,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
 
         if(uavStatus.nLoadWeight == m_mapCreate->getMinPlaneWeight())//最小载重的飞机
         {
-//            int enemyUavWeightTemp=0;
-//            for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
-//            {
-//                int uavEnemyId = it->first;
-//                UAV uavEnemyStatus = it->second;
 
-//                map<int,int>::iterator its;
-//                its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
-
-//                if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
-//                {
-//                    if(uavEnemyStatus.nLoadWeight>enemyUavWeightTemp)
-//                    {
-//                        enemyUavWeightTemp = uavEnemyStatus.nLoadWeight;
-//                    }
-//                }
-//            }
             if(enemyUavWeightTemp != 0)
             {
                 for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
@@ -934,7 +921,6 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
 
                                         break;
 
-
                                     }
                                 }
                             }
@@ -951,21 +937,31 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
 
                 }else if(goodsStatus.nState ==0){//当前货物还在，
                     //todo... 需要判断货物处有无敌方无人机，如果敌方无人机正在去取货，调整相应的策略
-                    for(map<int,uavCoord_t>::iterator it= m_enemyUavNowPiont.begin(); it!= m_enemyUavNowPiont.end(); it++)//扁历存在的ID
+                    if(m_weUavNum > m_enemyUavNum)
                     {
-                        int enemyUavIDTemp      = it->first;
-                        uavCoord_t enemyUavTempCoord   = it->second;
-                        if((enemyUavTempCoord.x == goodsStatus.nStartX)&&(enemyUavTempCoord.y == goodsStatus.nStartY))//敌方无人机去取货了
+                        for(map<int,uavCoord_t>::iterator it= m_enemyUavNowPiont.begin(); it!= m_enemyUavNowPiont.end(); it++)//扁历存在的ID
                         {
-                            if(enemyUavTempCoord.z<minFlyHeight)
+                            int enemyUavIDTemp      = it->first;
+                            uavCoord_t enemyUavTempCoord   = it->second;
+                            if((enemyUavTempCoord.x == goodsStatus.nStartX)&&(enemyUavTempCoord.y == goodsStatus.nStartY))//敌方无人机去取货了
                             {
-                                if((uavStatus.nZ > enemyUavTempCoord.z )&& (uavStatus.nLoadWeight>m_enemyUavID[enemyUavIDTemp].nLoadWeight)\
-                                        &&(uavStatus.nZ>= minFlyHeight))
+                                if(enemyUavTempCoord.z<minFlyHeight)
                                 {
-                                    m_uavTask[uavID].taskClass = UAV_TASK_IDEL;
-                                    m_uavTask[uavID].taskState = UAV_STATE_RAND;
-                                    uavTaskAssignGoods(uavID,uavStatus);//调度取货算法，任务切换；如果不满足条件，继续执行IDEL任务
-                                    break;
+                                    map<int,int>::iterator its;
+                                    its=m_uavTrackID.find(enemyUavIDTemp);//判断敌方飞机是否根我方攻击飞机关联上了
+
+                                    if(its==m_uavTrackID.end())//如果没有关联上，
+                                    {
+                                        break;//isTrack=1;
+                                    }
+                                    if((uavStatus.nZ > enemyUavTempCoord.z )&& (uavStatus.nLoadWeight>m_enemyUavID[enemyUavIDTemp].nLoadWeight)\
+                                            &&(uavStatus.nZ>= minFlyHeight))
+                                    {
+                                        m_uavTask[uavID].taskClass = UAV_TASK_IDEL;
+                                        m_uavTask[uavID].taskState = UAV_STATE_RAND;
+                                        uavTaskAssignGoods(uavID,uavStatus);//调度取货算法，任务切换；如果不满足条件，继续执行IDEL任务
+                                        break;
+                                    }
                                 }
                             }
                         }

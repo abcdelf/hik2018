@@ -121,7 +121,10 @@ class UAV_TASK{
 
 
     int m_weMoney;
+    int m_enemyMoney;
+
     int m_enemyUavNum;
+    int m_weUavNum;
     UAV_PRICE m_cheapestUavPrice;
 
     int m_runTime;
