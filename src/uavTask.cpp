@@ -204,7 +204,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
         enemyUavIDTemp      = it->first;
         enemyUavTempCoord   = it->second;
 
-        if(abs(enemyUavTempCoord.z - uavStatus.nZ) < 1)//敌方飞机和我方无人机在上下两层高度
+        if(abs(enemyUavTempCoord.z - uavStatus.nZ) < 1)//敌方飞机和我方无人机在同一高度
         {
             weUavToEnemyDisX = abs(enemyUavTempCoord.x - uavStatus.nX);
             weUavToEnemyDisY = abs(enemyUavTempCoord.y - uavStatus.nY);
@@ -1620,7 +1620,8 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             if(m_uavTask[uavIdTemp].taskState == UAV_GOOD_TO_GET)
             {
                 if(goodsStatus.nStartX == uavStatusTemp.nX && goodsStatus.nStartY == uavStatusTemp.nY&&\
-                        uavStatusTemp.nZ == 1 &&m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ==0)
+                        uavStatusTemp.nZ == 1 &&m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ==0 &&\
+                        goodsStatus.nState == 0 && goodsStatus.nLeftTime!=0)
                 {
                     m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nGoodsNo = m_uavTask[uavIdTemp].goodsNo;
                     m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
