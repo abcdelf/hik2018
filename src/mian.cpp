@@ -121,31 +121,10 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 
 
 void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
-                                MAP_CREATE* mmapcreate,MATCHSTATE *newstate, UAV_TASK *uavTask)
+                                MAP_CREATE* mmapcreate, UAV_TASK *uavTask)
 {
-//    UAV myUavStatus;
-//    UAV enemyUavStatus;
-
-//    newstate->renewMatchstate(pstMatch);
-
-//    newstate->findUavEnemyHome();//find enemy home ,just used with start
- 
-//    for(int i=0;i<pstMatch->nGoodsNum;i++)
-//    {
-//      //  printf("%dth,goods num:%d,goods state:%d,stratx:%d,starty:%d\n",i,pstMatch->astGoods[i].nNO,pstMatch->astGoods[i].nState,pstMatch->astGoods[i].nStartX,pstMatch->astGoods[i].nStartY);
-//    };
-
-//    for(int i=0; i< newstate->getWeUavNum(); i++)
-//    {
-        
-//        myUavStatus = newstate->pickWeUavFromNum(i);
-
-//    }
 
     uavTask->uavTaskProcess(pstMatch);
-
-    //cout<<"currenttime= "<<newstate->getCurrentTime()<<endl;
-  
 
 
 }
@@ -342,42 +321,41 @@ int main(int argc, char *argv[])
         pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
     }
 
-    cout<<"start"<<endl;
+    cout<<"start--";
 
     // 进入主函数之前，初始化地图信息
     MAP_CREATE* mymap=new MAP_CREATE(pstMapInfo);
     
     
     //打印地图信息
-    ofstream outFile;
-    outFile.open("log.txt");
+/*//    ofstream outFile;
+//    outFile.open("log.txt");
 
-    for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
-    {
-        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
-               pstMapInfo->astUavPrice[i].szType,pstMapInfo->astUavPrice[i].nLoadWeight,pstMapInfo->astUavPrice[i].nValue,\
-               pstMapInfo->astUavPrice[i].capacity, pstMapInfo->astUavPrice[i].charge);
-    }
+//    for(int i=0;i<pstMapInfo->nUavPriceNum;i++)
+//    {
+//        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
+//               pstMapInfo->astUavPrice[i].szType,pstMapInfo->astUavPrice[i].nLoadWeight,pstMapInfo->astUavPrice[i].nValue,\
+//               pstMapInfo->astUavPrice[i].capacity, pstMapInfo->astUavPrice[i].charge);
+//    }
 
-    for(int i=0;i<mymap->getPlaneTypeNum();i++)
-    {
-        int planWeight = mymap->getPlaneWeight(i);
-        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
-                mymap->getPlaneUavPrice(planWeight).szType,mymap->getPlaneUavPrice(planWeight).nLoadWeight,\
-                mymap->getPlaneUavPrice(planWeight).nValue,mymap->getPlaneUavPrice(planWeight).capacity,\
-                mymap->getPlaneUavPrice(planWeight).charge);
-        outFile<<"Type:"<<mymap->getPlaneUavPrice(planWeight).szType<<" nLoadWeight:"<<mymap->getPlaneUavPrice(planWeight).nLoadWeight\
-              <<" nValue:"<<mymap->getPlaneUavPrice(planWeight).nValue<<" capacity:"<<mymap->getPlaneUavPrice(planWeight).capacity\
-             <<" charge:"<<mymap->getPlaneUavPrice(planWeight).charge<<endl;
-    }
-    outFile.close();
+//    for(int i=0;i<mymap->getPlaneTypeNum();i++)
+//    {
+//        int planWeight = mymap->getPlaneWeight(i);
+//        printf("Type:%5s,nLoadWeight:%5d,nValue:%5d,capacity:%5d,charge:%5d\n",\
+//                mymap->getPlaneUavPrice(planWeight).szType,mymap->getPlaneUavPrice(planWeight).nLoadWeight,\
+//                mymap->getPlaneUavPrice(planWeight).nValue,mymap->getPlaneUavPrice(planWeight).capacity,\
+//                mymap->getPlaneUavPrice(planWeight).charge);
+//        outFile<<"Type:"<<mymap->getPlaneUavPrice(planWeight).szType<<" nLoadWeight:"<<mymap->getPlaneUavPrice(planWeight).nLoadWeight\
+//              <<" nValue:"<<mymap->getPlaneUavPrice(planWeight).nValue<<" capacity:"<<mymap->getPlaneUavPrice(planWeight).capacity\
+//             <<" charge:"<<mymap->getPlaneUavPrice(planWeight).charge<<endl;
+//    }
+//    outFile.close();*/
 
-    MATCHSTATE *matchstate=new MATCHSTATE();
 
     pathSearch *mpathSearch = new pathSearch(mymap);
     UAV_TASK *uavTask = new UAV_TASK(mymap,pstFlayPlane,mpathSearch);
 
-    
+    cout<<"; init ok !!!"<<endl;
     
     // 根据服务器指令，不停的接受发送数据
     while (1)
@@ -391,7 +369,7 @@ int main(int argc, char *argv[])
             {
                 pstFlayPlane->astUav[i].nStatus = UAV_CRASH;
             }
-           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, mymap,matchstate, uavTask);
+           AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane, mymap, uavTask);
         }
 
 
@@ -440,7 +418,6 @@ int main(int argc, char *argv[])
     free(pSendBuffer);
     free(pstMapInfo);
     delete mymap;
-    delete matchstate;
     delete mpathSearch;
     delete uavTask;
 

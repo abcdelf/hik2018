@@ -8,10 +8,7 @@ include/SquareGraph.h
 include/cJSON.h
 include/mapCreate.h
 include/matchState.h
-include/matchStatus.h
 include/search.h
-include/uavPlan.h
-include/uavSet.h
 src/CmdParse.cpp
 src/JsonParse.cpp
 src/Node.cpp
@@ -23,5 +20,4 @@ src/matchState.cpp
 src/matchStatus.cpp
 src/mian.cpp
 src/search.cpp
-src/uavPlan.cpp
 src/uavSet.cpp

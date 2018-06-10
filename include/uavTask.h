@@ -50,7 +50,6 @@ typedef struct {
     int taskClass;
     int enemyNo;
     int goodsNo;
-    int randLocationState;
     int uavHomeStatus;
     uavCoord_t nowLocation;
     uavCoord_t nextLocation;
@@ -113,8 +112,13 @@ class UAV_TASK{
 
     map<int , uavCoord_t> m_enemyUavNowPiont;
 
+    map<float, int> goodsCost;
+
     vector<UAV> uavOutHomeQueue;
     vector<UAV> uavBackHomeQueue;
+
+    vector<pair<int, int>> weUavObstaclePos;
+
 
     int m_weMoney;
     int m_enemyUavNum;
@@ -140,7 +144,16 @@ class UAV_TASK{
 
     int isUavInHome(int uavX, int uavY)
     {
-        if(uavX == weHomeX && uavY == weHomeY)
+        if((uavX == weHomeX) && (uavY == weHomeY))
+        {
+            return 1;
+        }
+        return 0;
+    };
+
+    int isUavInEnemyHome(int uavX, int uavY)
+    {
+        if((uavX == enemyUavHomeX) && (uavY == enemyUavHomeY))
         {
             return 1;
         }
