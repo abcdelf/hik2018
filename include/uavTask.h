@@ -60,6 +60,11 @@ typedef struct {
 
 }uavTask_t;
 
+
+//typedef pair<int, UAV> PAIR_UAV;
+
+
+
 class UAV_TASK{
 
   public:

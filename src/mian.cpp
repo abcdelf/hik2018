@@ -123,12 +123,12 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 void  AlgorithmCalculationFun(  MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane,\
                                 MAP_CREATE* mmapcreate,MATCHSTATE *newstate, UAV_TASK *uavTask)
 {
-    UAV myUavStatus;
-    UAV enemyUavStatus;
+//    UAV myUavStatus;
+//    UAV enemyUavStatus;
 
-    newstate->renewMatchstate(pstMatch);
+//    newstate->renewMatchstate(pstMatch);
 
-    newstate->findUavEnemyHome();//find enemy home ,just used with start
+//    newstate->findUavEnemyHome();//find enemy home ,just used with start
  
 //    for(int i=0;i<pstMatch->nGoodsNum;i++)
 //    {
