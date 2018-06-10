@@ -801,7 +801,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
             }
         }
     }
-    if(m_runTime>MaxFlyHeight*2)//运行时间超过，开始判断附近有无敌方高价值无人机
+    if(m_runTime>MaxFlyHeight)//运行时间超过，开始判断附近有无敌方高价值无人机
     {
         if(uavStatus.nGoodsNo==-1)//没有载货，
         {
@@ -954,6 +954,10 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                                     {
                                         break;//isTrack=1;
                                     }
+                                    if(pow(pow(abs(uavStatus.nX - enemyUavTempCoord.x),2)+pow(abs(uavStatus.nY - enemyUavTempCoord.y),2),0.5)<(minFlyHeight+enemyUavTempCoord.z))
+                                    {
+                                        break;
+                                    }
                                     if((uavStatus.nZ > enemyUavTempCoord.z )&& (uavStatus.nLoadWeight>m_enemyUavID[enemyUavIDTemp].nLoadWeight)\
                                             &&(uavStatus.nZ>= minFlyHeight))
                                     {
@@ -978,7 +982,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
     }
     else if(m_uavTask[uavID].taskClass == UAV_TASK_TRACK)//飞机的当前任务为攻击状态
     {//todo ...
-        //同上，使用敌方无人机ID时候，需要判断是否存在
+
 
     }
 }
@@ -1015,12 +1019,20 @@ void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无�
                         m_uavTask[uavID].goalLocation.z = enemyUavStatus.nZ;
                     }else//不在同一点
                     {
-                        int enemyGoodsNo = enemyUavStatus.nGoodsNo;
-                        GOODS enemyGoodsStatus = m_Goods[enemyGoodsNo];
+                        if(abs(pow(pow(abs(uavStatus.nX - enemyUavStatus.nX),2)+pow(abs(uavStatus.nY - enemyUavStatus.nY),2),0.5)<(2*minFlyHeight-enemyUavStatus.nZ)))
+                        {
+                            m_uavTask[uavID].goalLocation.x = enemyUavStatus.nX;//
+                            m_uavTask[uavID].goalLocation.y = enemyUavStatus.nY;
+                            m_uavTask[uavID].goalLocation.z = enemyUavStatus.nZ;
+                        }else
+                        {
+                            int enemyGoodsNo = enemyUavStatus.nGoodsNo;
+                            GOODS enemyGoodsStatus = m_Goods[enemyGoodsNo];
 
-                        m_uavTask[uavID].goalLocation.x = enemyGoodsStatus.nEndX;//
-                        m_uavTask[uavID].goalLocation.y = enemyGoodsStatus.nEndY;
-                        m_uavTask[uavID].goalLocation.z = 1;
+                            m_uavTask[uavID].goalLocation.x = enemyGoodsStatus.nEndX;//
+                            m_uavTask[uavID].goalLocation.y = enemyGoodsStatus.nEndY;
+                            m_uavTask[uavID].goalLocation.z = 1;
+                        }
                     }
                 }else{//敌方无人机，水平方向已经可以移动
                     int enemyGoodsNo = enemyUavStatus.nGoodsNo;
