@@ -116,8 +116,8 @@ void UAV_TASK::updateUavStatus(MATCH_STATUS * pstMatch)
 	{
 		if(pstMatch->astWeUav[i].nStatus != UAV_CRASH)//飞机有效
 		{
-			m_weUav.insert(pair<int,UAV> (i,pstMatch->astWeUav[i]));
-			m_weUavID.insert(pair<int,UAV> (pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i]));
+            m_weUav.insert(pair<int,UAV> (i,pstMatch->astWeUav[i]));
+            m_weUavID.insert(pair<int,UAV> (pstMatch->astWeUav[i].nNO,pstMatch->astWeUav[i]));
 			m_uavPlanID.insert(pair<int, int>(pstMatch->astWeUav[i].nNO, i));
 
             coordTemp.x = pstMatch->astWeUav[i].nX;
@@ -416,7 +416,7 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
             {
                 sort(uavBackHomeQueue.begin(),uavBackHomeQueue.end(),sortFromMaxToMin);//按Z从大到小排序
                 uavStatusTemp = uavBackHomeQueue[0];//得到当前队列中高度最高的那个元素
-                needMinHeight = uavStatusTemp.nZ;//m_weUavID[uavStatusTemp.nNO].nZ+1;
+                needMinHeight = uavStatusTemp.nZ;
             }
 
             int heightStatus=0;
@@ -893,14 +893,38 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
             }
         }
     }
-
-    if(uavStatus.nGoodsNo==-1)//没有载货，
+    if(m_runTime>MaxFlyHeight*2)
     {
-        if((m_uavTask[uavID].taskClass == UAV_TASK_GOODS && uavStatus.nZ >=minFlyHeight)||m_uavTask[uavID].taskClass == UAV_TASK_IDEL)//并且高度在满足
+        if(uavStatus.nGoodsNo==-1)//没有载货，
         {
-            if(uavStatus.nLoadWeight*1.5 < enemyUavWeightTemp)//我方无人机未载货
+            if((m_uavTask[uavID].taskClass == UAV_TASK_GOODS && uavStatus.nZ >=minFlyHeight)||m_uavTask[uavID].taskClass == UAV_TASK_IDEL)//并且高度在满足 ||m_uavTask[uavID].taskClass == UAV_TASK_IDEL
             {
+                if(uavStatus.nLoadWeight*1.5 < enemyUavWeightTemp)//我方无人机未载货
+                {
 
+                    for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
+                    {
+                        int uavEnemyId = it->first;
+                        UAV uavEnemyStatus = it->second;
+
+                        map<int,int>::iterator its;
+                        its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
+
+                        if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
+                        {
+                            if(uavEnemyStatus.nLoadWeight == enemyUavWeightTemp)//找到一个
+                            {
+     //                           cout<<"Find enemy uavID to track, UAV weight = "<<enemyUavWeightTemp<<"; UAV ID= "<<uavEnemyId<<endl;
+
+                                m_uavTrackID.insert(pair<int, int>(uavEnemyId,uavID));//将敌方我方飞机ID关联上
+                                m_uavTask[uavID].taskClass = UAV_TASK_TRACK;
+                                m_uavTask[uavID].taskState = UAV_STATE_RAND;
+                                m_uavTask[uavID].enemyNo   = uavEnemyId;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -1220,19 +1244,6 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 
     updateUavStatus(pstMatch);//更新飞行器状态
 
-    cout<<endl;
-    //把map中元素转存到vector中
-    vector< pair<int, UAV>> name_score_vec(m_weUavID.begin(), m_weUavID.end());
-    sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_value);
-
-
-
-    for (int i = 0; i != name_score_vec.size(); ++i) {
-        UAV test = name_score_vec[i].second;
-        cout<< "UAV ID="<< name_score_vec[i].first <<"; nWeight = "<< test.nLoadWeight << endl;
-
-    }
-
 
 
     while(trackCycle ==1)
@@ -1271,19 +1282,38 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
         }
     }
 
+    cout<<endl;
+    //把map中元素转存到vector中
+    vector< pair<int, UAV>> name_score_vec(m_weUavID.begin(), m_weUavID.end());
+    sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_value);
 
-	for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID 
-	{
+    for (int i = 0; i != name_score_vec.size(); ++i) {
 
-        int uavIdTemp = it->first;
-        UAV uavStatusTemp = it->second;
-        cout<<"m_weUavID = "<<uavIdTemp<<" ; nweight = "<<uavStatusTemp.nLoadWeight<<endl;
+        int uavIdTemp = name_score_vec[i].first;
+        UAV uavStatusTemp = name_score_vec[i].second;
+
+        cout<< "UAV ID="<< uavIdTemp <<"; nWeight = "<< uavStatusTemp.nLoadWeight << endl;
+
         m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]] = uavStatusTemp;
 
         uavTaskAllot(uavIdTemp,uavStatusTemp);
 
+    }
 
-	}
+//    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+//	{
+
+//        int uavIdTemp = it->first;
+//        UAV uavStatusTemp = it->second;
+//        cout<<"m_weUavID = "<<uavIdTemp<<" ; nweight = "<<uavStatusTemp.nLoadWeight<<endl;
+
+
+//        m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]] = uavStatusTemp;
+
+//        uavTaskAllot(uavIdTemp,uavStatusTemp);
+
+
+//	}
 
 
     vector<UAV>::iterator it;
@@ -1337,18 +1367,21 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 //        uavOutHomeFlyMaxHeight = m_uavTask[uavStatusTemp.nNO].nextLocation.z-1;
 
 //    }//else
-    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID//判断我方飞机是否会相撞
+
+    //for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID//判断我方飞机是否会相撞
+    for (int i = 0; i != name_score_vec.size(); ++i)
     {
-        int uavIdNow     = it->first;
+        int uavIdNow     = name_score_vec[i].first;
         //UAV uavStatusNow = it->second;
 
         uavTask_t uavTaskNow = m_uavTask[uavIdNow];
         //if((uavTaskNow.nextLocation.x != weHomeX)&&(uavTaskNow.nextLocation.y != weHomeY))
         if(uavTaskNow.nextLocation.x != uavTaskNow.nowLocation.x||uavTaskNow.nextLocation.y != uavTaskNow.nowLocation.y||uavTaskNow.nextLocation.z != uavTaskNow.nowLocation.z)//当前无人机位置发生了变化
         {
-            for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+            //for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+            for (int j = 0; j != name_score_vec.size(); ++j)
             {
-                int uavIdCycle     = it->first;
+                int uavIdCycle     = name_score_vec[j].first;
                 //UAV uavStatusCyCle = it->second;
                 uavTask_t uavTaskCycle = m_uavTask[uavIdCycle];
                 if(uavIdCycle!=uavIdNow)
@@ -1499,9 +1532,10 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
         }
     }
 
-    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+    //for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+    for (int i = 0; i != name_score_vec.size(); ++i)
     {
-        int uavIdNow     = it->first;
+        int uavIdNow     = name_score_vec[i].first;
         //UAV uavStatusNow = it->second;
 
         uavTask_t uavTaskNow = m_uavTask[uavIdNow];
@@ -1512,9 +1546,10 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             {
                 if(uavTaskNow.nextLocation.z<uavTaskNow.nowLocation.z)//biaoshi move down
                 {
-                    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+                    //for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+                    for (int j = 0; j != name_score_vec.size(); ++j)
                     {
-                        int uavIdCycle     = it->first;
+                        int uavIdCycle     = name_score_vec[j].first;
                         //UAV uavStatusCyCle = it->second;
                         uavTask_t uavTaskCycle = m_uavTask[uavIdCycle];
                         if(uavIdCycle!=uavIdNow)
@@ -1545,37 +1580,38 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
     }
 
 
-    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+    //for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+    for (int i = 0; i != name_score_vec.size(); ++i)
     {
-        int uavIdTemp     = it->first;
-        UAV uavStatusTemp = it->second;
+        int uavIdTemp     = name_score_vec[i].first;
+        UAV uavStatusTemp = name_score_vec[i].second;
 
         if(m_uavTask[uavIdTemp].nextLocation.z != uavStatusTemp.nZ)
         {
             if(uavStatusTemp.nZ < minFlyHeight)
             {
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = uavStatusTemp.nX;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = uavStatusTemp.nY;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nX = uavStatusTemp.nX;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nY = uavStatusTemp.nY;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
             }else if(m_uavTask[uavIdTemp].nextLocation.x != uavStatusTemp.nX || m_uavTask[uavIdTemp].nextLocation.y != uavStatusTemp.nY)
             {
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = m_uavTask[uavIdTemp].nextLocation.y;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = uavStatusTemp.nZ;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nX = m_uavTask[uavIdTemp].nextLocation.x;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nY = m_uavTask[uavIdTemp].nextLocation.y;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ = uavStatusTemp.nZ;
             }else
             {
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = m_uavTask[uavIdTemp].nextLocation.y;
-                m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nX = m_uavTask[uavIdTemp].nextLocation.x;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nY = m_uavTask[uavIdTemp].nextLocation.y;
+                m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
             }
 
         }else{
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nX = m_uavTask[uavIdTemp].nextLocation.x;
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nY = m_uavTask[uavIdTemp].nextLocation.y;
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
+            m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nX = m_uavTask[uavIdTemp].nextLocation.x;
+            m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nY = m_uavTask[uavIdTemp].nextLocation.y;
+            m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ = m_uavTask[uavIdTemp].nextLocation.z;
         }
 
-        uavChargeProcess(it->first,it->second);
+        uavChargeProcess(uavIdTemp,uavStatusTemp);
 
 
         if(m_uavTask[uavIdTemp].taskClass == UAV_TASK_GOODS)
@@ -1584,32 +1620,32 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
             if(m_uavTask[uavIdTemp].taskState == UAV_GOOD_TO_GET)
             {
                 if(goodsStatus.nStartX == uavStatusTemp.nX && goodsStatus.nStartY == uavStatusTemp.nY&&\
-                        uavStatusTemp.nZ == 1 &&m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ==0)
+                        uavStatusTemp.nZ == 1 &&m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ==0)
                 {
-                    m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nGoodsNo = m_uavTask[uavIdTemp].goodsNo;
-                    m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
+                    m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nGoodsNo = m_uavTask[uavIdTemp].goodsNo;
+                    m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
                     m_uavTask[uavIdTemp].taskState = UAV_GOOD_TO_PUT;
 
-                   // cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<<endl;
+                   // cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].remainElectricity<<endl;
                 }
 
             }else if(m_uavTask[uavIdTemp].taskState == UAV_GOOD_TO_PUT)
             {
                 if(goodsStatus.nEndX == uavStatusTemp.nX && goodsStatus.nEndY == uavStatusTemp.nY&&\
-                        uavStatusTemp.nZ == 0 &&m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ==1)
+                        uavStatusTemp.nZ == 0 &&m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].nZ==1)
                 {
 
                 }
                 if(uavStatusTemp.nGoodsNo!=-1)
-                    m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
-                //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<<endl;
-               // cout<<"next Z="<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].nZ<<" ;uavStatusTemp.nZ="<< uavStatusTemp.nZ<<endl;
+                    m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
+                //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].remainElectricity<<endl;
+               // cout<<"next Z="<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].nZ<<" ;uavStatusTemp.nZ="<< uavStatusTemp.nZ<<endl;
             }
         }
 
-        if(m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<0)//临界植判断
-            m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity=0;
-        //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[it->first]].remainElectricity<<endl;
+        if(m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity<0)//临界植判断
+            m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity=0;
+        //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].remainElectricity<<endl;
 
 
 
