@@ -1229,7 +1229,7 @@ void UAV_TASK::uavChargeProcess(int uavID, UAV uavStatus)//无人机充电
 void UAV_TASK::uavPurchase(void)
 {
     int remainMoney=m_weMoney;
-    if(m_weUavNum < m_enemyUavNum*3)
+    if((m_weUavNum < m_enemyUavNum*3)||(m_weUavNum<20))
     {
         if(m_weMoney > m_cheapestUavPrice.nValue )
         {
