@@ -698,9 +698,20 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
                                 }
                                 if(goodsDisToEnemyHome>0)
                                 {
-                                     percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                    int planeSecondWeight = m_mapCreate->getPlaneWeight(1);
+                                    if(planeSecondWeight!=-1)
+                                    {
+                                        if(planeLoadWeight > planeSecondWeight)
+                                            percentWorth    = (float)(goodsWorth/distance/planeLoadWeight)*(goodsDisToEnemyHome/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                    }else{
+                                        percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                    }
                                 }else
+                                {
                                     percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                }
+
+
                                 goodsCost.insert(pair<float, int>(percentWorth, goodsId));//遍历得到所有可以取货的价值表
                             }
                         }
@@ -761,7 +772,29 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
                                 float goodsWorth      = goodsStatus.nValue;
                                 float distance        = uavDisToGetGoods + uavDisToPutGoods;
                                 float planeLoadWeight = uavStatus.nLoadWeight;
-                                float percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);
+                                float goodsDisToEnemyHome = 0;
+                                float percentWorth=0;
+
+                                if(enemyUavHomeX!=-1)
+                                {
+                                    //物品到敌方的家的距离
+                                    goodsDisToEnemyHome = pow(pow(abs(goodsStatus.nStartX - enemyUavHomeX), 2) + pow(abs( goodsStatus.nStartY - enemyUavHomeY ),2),0.5);//
+                                }
+                                if(goodsDisToEnemyHome>0)
+                                {
+                                    int planeSecondWeight = m_mapCreate->getPlaneWeight(1);
+                                    if(planeSecondWeight!=-1)
+                                    {
+                                        if(planeLoadWeight > planeSecondWeight)
+                                            percentWorth    = (float)(goodsWorth/distance/planeLoadWeight)*(goodsDisToEnemyHome/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                    }else{
+                                        percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                    }
+                                }else
+                                {
+                                    percentWorth    = (float)(goodsWorth/distance/planeLoadWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                }
+
                                 goodsCost.insert(pair<float, int>(percentWorth, goodsId));//遍历得到所有可以取货的价值表
                             }
                         }
@@ -868,7 +901,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
     if(m_uavTask[uavID].taskClass == UAV_TASK_IDEL)//空闲任务下，规划任务
     {
 
-        if(uavStatus.nLoadWeight == m_mapCreate->getMinPlaneWeight())//最小载重的飞机
+        if(uavStatus.nLoadWeight == m_mapCreate->getMinPlaneWeight() && (m_weUavNum >= m_enemyUavNum))//最小载重的飞机
         {
 
             if(enemyUavWeightTemp > 0)
@@ -1195,11 +1228,26 @@ void UAV_TASK::uavChargeProcess(int uavID, UAV uavStatus)//无人机充电
 
 void UAV_TASK::uavPurchase(void)
 {
-    if(m_weMoney > m_cheapestUavPrice.nValue )
+    int remainMoney=m_weMoney;
+    if(m_weUavNum < m_enemyUavNum*3)
     {
-        m_pstFlayPlane->nPurchaseNum = 1;
-        strcpy(m_pstFlayPlane->szPurchaseType[0],m_cheapestUavPrice.szType);
+        if(m_weMoney > m_cheapestUavPrice.nValue )
+        {
+            int purChaseNum=0;
+            purChaseNum = m_weMoney/m_cheapestUavPrice.nValue;
+
+            remainMoney = m_weMoney - purChaseNum*m_cheapestUavPrice.nValue;
+
+            m_pstFlayPlane->nPurchaseNum = purChaseNum;
+            for(int i=0; i<purChaseNum; i++)
+                strcpy(m_pstFlayPlane->szPurchaseType[i],m_cheapestUavPrice.szType);
+        }
+    }else{
+
+
     }
+
+
 }
 
 bool cmp_by_value(const  pair<int, UAV>& lhs, const  pair<int, UAV>& rhs) {
