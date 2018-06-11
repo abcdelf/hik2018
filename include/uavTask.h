@@ -59,6 +59,12 @@ typedef struct {
 
 }uavTask_t;
 
+typedef struct{
+    int value;
+    int reaminCap;
+    int uavId;
+}enemyValue_t;
+
 
 //typedef pair<int, UAV> PAIR_UAV;
 
@@ -102,6 +108,9 @@ class UAV_TASK{
     map<int, UAV> m_enemyUavID;
     map<int, int> m_uavTrackID;
 
+    map<int,UAV> enemyNumNeedToTrack;
+    vector<enemyValue_t> enemyNumNeedToTrackValue;
+    
     map<int, GOODS> m_Goods;
     map<int, int>   m_uavGoodsID;
 
