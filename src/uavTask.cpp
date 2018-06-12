@@ -1203,7 +1203,7 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                     UAV enemyStatus = m_enemyUavID[enemyUavIDTemp];
                     if(enemyStatus.nGoodsNo ==-1)
                     {
-                        enemyStatusCnt=0;
+                        enemyStatusCnt=1;
                         m_uavTask[uavID].dangeraus++;
                     }
                 }
@@ -1280,7 +1280,7 @@ void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无�
                     m_uavTask[uavID].goalLocation.y = enemyGoodsStatus.nEndY;
                     m_uavTask[uavID].goalLocation.z = 1;
                 }
-            }else if(enemyUavStatus.nGoodsNo == -1)
+            }else if(enemyUavStatus.nGoodsNo != -1)
             {
                 int enemyGoodsNo = enemyUavStatus.nGoodsNo;
 
