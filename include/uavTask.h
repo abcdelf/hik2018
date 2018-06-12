@@ -51,6 +51,7 @@ typedef struct {
     int enemyNo;
     int goodsNo;
     int uavHomeStatus;
+    int dangeraus;
     uavCoord_t nowLocation;
     uavCoord_t nextLocation;
     uavCoord_t goalLocation;

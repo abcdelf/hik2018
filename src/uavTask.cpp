@@ -613,6 +613,7 @@ void UAV_TASK::uavTaskInGoods(int uavID, UAV uavStatus)
         if(uavStatus.nGoodsNo != -1)
         {
             m_uavTask[uavID].taskState = UAV_GOOD_TO_PUT;
+            m_uavTask[uavID].dangeraus = 0;
         }else
         {
             GOODS goodsStatus = m_Goods[m_uavTask[uavID].goodsNo];
@@ -621,6 +622,7 @@ void UAV_TASK::uavTaskInGoods(int uavID, UAV uavStatus)
             m_uavTask[uavID].goalLocation.x = goodsStatus.nStartX;//
             m_uavTask[uavID].goalLocation.y = goodsStatus.nStartY;
             m_uavTask[uavID].goalLocation.z = 0;
+
 
             //cout<<"goodsID="<<m_uavTask[uavID].goodsNo<<"; goods Start :x="<<m_uavTask[uavID].goalLocation.x<<";y="<<m_uavTask[uavID].goalLocation.y<<endl;
         }
@@ -642,6 +644,72 @@ void UAV_TASK::uavTaskInGoods(int uavID, UAV uavStatus)
             m_uavTask[uavID].goalLocation.x = goodsStatus.nEndX;//
             m_uavTask[uavID].goalLocation.y = goodsStatus.nEndY;
             m_uavTask[uavID].goalLocation.z = 0;
+
+
+            if(m_uavTask[uavID].dangeraus>(pow(pow(abs(uavStatus.nX-goodsStatus.nEndX),2)+pow(abs(uavStatus.nY-goodsStatus.nEndY),2),0.5)/2))
+            {
+                int enemyUavValueTemp=0;
+                int enemyId=-1;
+                int goodId=-1;
+                for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
+                {
+                    int uavEnemyId = it->first;
+                    UAV uavEnemyStatus = it->second;
+
+                    map<int,int>::iterator its;
+                    its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
+
+                    if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
+                    {
+                        if(uavEnemyStatus.nGoodsNo!=-1)
+                        {
+                            if(m_Goods[uavEnemyStatus.nNO].nValue > enemyUavValueTemp)
+                            {
+                                enemyUavValueTemp = m_Goods[uavEnemyStatus.nNO].nValue;
+                                enemyId = uavEnemyId;
+                                goodId = uavEnemyStatus.nNO;
+                            }
+                        }
+                    }
+                }
+                if(enemyUavValueTemp>0&&enemyId!=-1)
+                {
+                    if(goodId!=-1)
+                    {
+                        GOODS goodsStatus = m_Goods[goodId];
+                        m_uavTask[uavID].goalLocation.x = goodsStatus.nEndX;//
+                        m_uavTask[uavID].goalLocation.y = goodsStatus.nEndY;
+                        m_uavTask[uavID].goalLocation.z = minFlyHeight;
+                    }
+                }else{
+                    for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
+                    {
+                        int uavEnemyId = it->first;
+                        UAV uavEnemyStatus = it->second;
+
+                        map<int,int>::iterator its;
+                        its=m_uavTrackID.find(uavEnemyId);//判断敌方飞机是否根我方攻击飞机关联上了
+
+                        if(its==m_uavTrackID.end())//如果没有关联上，找出未关联的飞机的最大重量
+                        {
+                            if(uavEnemyStatus.nLoadWeight>m_mapCreate->getMinPlaneWeight())
+                            {
+                                enemyUavValueTemp = uavEnemyStatus.nLoadWeight;
+                                enemyId = uavEnemyId;
+                            }
+                        }
+                    }
+
+                    if(enemyUavValueTemp>0&&enemyId!=-1)
+                    {
+                        m_uavTask[uavID].goalLocation.x = m_enemyUavID[enemyId].nX;//
+                        m_uavTask[uavID].goalLocation.y = m_enemyUavID[enemyId].nY;
+                        m_uavTask[uavID].goalLocation.z = m_enemyUavID[enemyId].nZ;
+                    }
+
+                }
+
+            }
            // cout<<"goods End :x="<<m_uavTask[uavID].goalLocation.x<<";y="<<m_uavTask[uavID].goalLocation.y<<endl;
         }
     }
@@ -655,7 +723,7 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
 
     goodsCost.clear();
 
-    if(uavStatus.nX==weHomeX && uavStatus.nY==weHomeY )//首次运行的情况下，等待到达高度后开始分配任务&& (uavStatus.nZ >= (minFlyHeight-2))
+    if(uavStatus.nX==weHomeX && uavStatus.nY==weHomeY && (uavStatus.nZ >= (minFlyHeight-1)))//首次运行的情况下，等待到达高度后开始分配任务
     {
         if(m_uavTask[uavID].taskClass == UAV_TASK_IDEL)//空闲任务下，规划任务
         {
@@ -703,7 +771,17 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
                                     if(planeSecondWeight!=-1)
                                     {
                                         if(planeLoadWeight > planeSecondWeight)
-                                            percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//(goodsDisToEnemyHome/goodsWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                        {
+                                            if(goodsDisToEnemyHome<(mapXsize/3))
+                                            {
+                                                if(m_weUavNum <= m_enemyUavNum+3 )
+                                                    percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods)*(m_weUavNum/(m_enemyUavNum+1));//(goodsDisToEnemyHome/goodsWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                                else
+                                                    percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);
+                                            }else{
+                                                percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                            }
+                                        }
                                     }else{
                                         percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
                                     }
@@ -788,7 +866,17 @@ void UAV_TASK::uavTaskAssignGoods(int uavID, UAV uavStatus)
                                     if(planeSecondWeight!=-1)
                                     {
                                         if(planeLoadWeight > planeSecondWeight)
-                                            percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//*(goodsDisToEnemyHome/goodsWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                        {
+                                            if(goodsDisToEnemyHome<(mapXsize/3))
+                                            {
+                                                if(m_weUavNum <= m_enemyUavNum+3 )
+                                                    percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods)*(m_weUavNum/(m_enemyUavNum+1));//(goodsDisToEnemyHome/goodsWeight);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                                else
+                                                    percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);
+                                            }else{
+                                                percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
+                                            }
+                                        }
                                     }else{
                                         percentWorth    = (float)(goodsWorth/distance/(planeLoadWeight)/uavDisToPutGoods);//添加危险度判断，价值高的飞机，不取敌方停机坪附近的物品
                                     }
@@ -1084,10 +1172,6 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
                                     //敌方无人机和我方无人机关联上了
                                     if(m_uavTrackID[enemyUavIDTemp] != uavID)
                                     {
-//                                        if(pow(pow(abs(uavStatus.nX - enemyUavTempCoord.x),2)+pow(abs(uavStatus.nY - enemyUavTempCoord.y),2),0.5)<(minFlyHeight+enemyUavTempCoord.z))
-//                                        {
-//                                            break;
-//                                        }//判断我方无人机距离敌方无人机的距离
                                         if((uavStatus.nZ > enemyUavTempCoord.z )&& (uavStatus.nLoadWeight>m_enemyUavID[enemyUavIDTemp].nLoadWeight)\
                                                 &&(uavStatus.nZ>= minFlyHeight))
                                         {
@@ -1107,6 +1191,29 @@ void UAV_TASK::uavTaskAssign(int uavID, UAV uavStatus)
         }else if(m_uavTask[uavID].taskState == UAV_GOOD_TO_PUT)//本机器的状态为送货中，需要判断终点有无敌方飞机
         {
             //need todo ...
+            GOODS goodsStatus = m_Goods[m_uavTask[uavID].goodsNo];
+            int enemyStatusCnt=0;
+            for(map<int,uavCoord_t>::iterator it= m_enemyUavNowPiont.begin(); it!= m_enemyUavNowPiont.end(); it++)//扁历存在的ID
+            {
+                int enemyUavIDTemp      = it->first;
+                uavCoord_t enemyUavTempCoord   = it->second;
+                if(((abs(enemyUavTempCoord.x - goodsStatus.nEndX)<=1)&&(abs(enemyUavTempCoord.y - goodsStatus.nEndY)<=1))||\
+                   ((abs(enemyUavTempCoord.x - uavStatus.nX)<=1)&&(abs(enemyUavTempCoord.y - uavStatus.nY)<=1)))
+                {
+                    UAV enemyStatus = m_enemyUavID[enemyUavIDTemp];
+                    if(enemyStatus.nGoodsNo ==-1)
+                    {
+                        enemyStatusCnt=0;
+                        m_uavTask[uavID].dangeraus++;
+                    }
+                }
+            }
+            if(enemyStatusCnt==0)
+            {
+                if(m_uavTask[uavID].dangeraus>0)
+                    m_uavTask[uavID].dangeraus--;
+            }
+
 
 
         }
@@ -1218,6 +1325,7 @@ void UAV_TASK::uavTaskAllot(int uavID, UAV uavStatus)
         m_UavTaskTemp.goodsNo   = -1;
         m_UavTaskTemp.taskInIdelTime = 0;
         m_UavTaskTemp.uavHomeStatus = UAV_NOT_IN_QUEUE;
+        m_UavTaskTemp.dangeraus = 0;
 
         if(enemyUavHomeX!=-1)
             m_UavTaskTemp.goalLocation.x      =  enemyUavHomeX;
@@ -1367,7 +1475,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
    // cout<<endl;
     //把map中元素转存到vector中
     vector< pair<int, UAV>> name_score_vec(m_weUavID.begin(), m_weUavID.end());
-    sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_valueMinToMax);
+    sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_valueMaxToMin);
     cout<<endl;
     for (unsigned int i = 0; i != name_score_vec.size(); ++i) {
 
@@ -1381,7 +1489,7 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
         uavTaskAllot(uavIdTemp,uavStatusTemp);
 
     }
-   // sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_valueMinToMax);
+    sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_valueMinToMax);
 //    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
 //	{
 
@@ -1688,11 +1796,16 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
                 {
 
                 }
-                if(uavStatusTemp.nGoodsNo!=-1)
-                    m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
+
                 //cout<<"uavId="<<uavIdTemp<<" ;remainElectricity"<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].remainElectricity<<endl;
                // cout<<"next Z="<<m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp].nZ<<" ;uavStatusTemp.nZ="<< uavStatusTemp.nZ<<endl;
             }
+        }
+
+        if(uavStatusTemp.nGoodsNo!=-1)
+        {
+            GOODS goodsStatus = m_Goods[m_uavTask[uavIdTemp].goodsNo];
+            m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity = uavStatusTemp.remainElectricity - goodsStatus.nWeight;
         }
 
         if(m_pstFlayPlane->astUav[m_uavPlanID[uavIdTemp]].remainElectricity<0)//临界植判断
