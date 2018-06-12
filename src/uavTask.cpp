@@ -680,9 +680,13 @@ void UAV_TASK::uavTaskInGoods(int uavID, UAV uavStatus)
                     if(goodId!=-1)
                     {
                         GOODS goodsStatus = m_Goods[goodId];
+                        if(goodsStatus.nEndX!=-1)
+                        {
                         m_uavTask[uavID].goalLocation.x = goodsStatus.nEndX;//
                         m_uavTask[uavID].goalLocation.y = goodsStatus.nEndY;
                         m_uavTask[uavID].goalLocation.z = minFlyHeight;
+                        }
+
                     }
                 }else{
                     for(map<int,UAV>::iterator it= m_enemyUavID.begin(); it!= m_enemyUavID.end(); it++)
@@ -705,9 +709,13 @@ void UAV_TASK::uavTaskInGoods(int uavID, UAV uavStatus)
 
                     if(enemyUavValueTemp>0&&enemyId!=-1)
                     {
+                        if(m_enemyUavID[enemyId].nX!=-1)
+                        {
                         m_uavTask[uavID].goalLocation.x = m_enemyUavID[enemyId].nX;//
                         m_uavTask[uavID].goalLocation.y = m_enemyUavID[enemyId].nY;
                         m_uavTask[uavID].goalLocation.z = m_enemyUavID[enemyId].nZ;
+                        }
+
                     }
 
                 }
@@ -1293,10 +1301,12 @@ void UAV_TASK::uavTaskTrackEnemy(int uavID, UAV uavStatus)//计算被跟踪无�
                 if(its!=m_Goods.end())//货物存在
                 {
                     GOODS enemyGoodsStatus = m_Goods[enemyGoodsNo];
-
-                    m_uavTask[uavID].goalLocation.x = enemyGoodsStatus.nEndX;//
-                    m_uavTask[uavID].goalLocation.y = enemyGoodsStatus.nEndY;
-                    m_uavTask[uavID].goalLocation.z = 1;
+                    if(enemyGoodsStatus.nEndX != -1)
+                    {
+                        m_uavTask[uavID].goalLocation.x = enemyGoodsStatus.nEndX;//
+                        m_uavTask[uavID].goalLocation.y = enemyGoodsStatus.nEndY;
+                        m_uavTask[uavID].goalLocation.z = 1;
+                    }
                 }
             }
         }
