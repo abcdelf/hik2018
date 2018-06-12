@@ -132,6 +132,7 @@ class UAV_TASK{
 
     vector<pair<int, UAV>> name_score_vec;
 
+    vector<Node> m_uavPath;
 
     int m_weMoney;
     int m_enemyMoney;

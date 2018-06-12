@@ -368,15 +368,16 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
                 if(heightStatus==0)
                 {
 
+                        m_uavPath.clear();
 
-                        vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
+                        m_uavPath = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
                                                                       make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
                                                                       uavStatus.nZ,weUavObstaclePos);
 
 
-                        if(path.size()>1)
+                        if(m_uavPath.size()>1)
                         {
-                          auto p=path.begin();
+                          auto p=m_uavPath.begin();
 
                           p++;
                           Node node = *p;
@@ -441,14 +442,16 @@ void UAV_TASK::uavRun(int uavID, UAV uavStatus)
                 {
                     weUavObstaclePos.push_back(make_pair(weHomeX,weHomeY));
                 }
-                    vector<Node> path = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
+
+                    m_uavPath.clear();
+                    m_uavPath = m_PathSearch->createGraph(make_pair(uavStatus.nX,uavStatus.nY),\
                                                                   make_pair(m_uavTask[uavID].goalLocation.x,m_uavTask[uavID].goalLocation.y),\
                                                                   uavStatus.nZ,weUavObstaclePos);
 
 
-                    if(path.size()>1)
+                    if(m_uavPath.size()>1)
                     {
-                      auto p=path.begin();
+                      auto p=m_uavPath.begin();
 
                       p++;
                       Node node = *p;
