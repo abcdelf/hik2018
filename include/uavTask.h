@@ -67,7 +67,7 @@ typedef struct{
 }enemyValue_t;
 
 
-//typedef pair<int, UAV> PAIR_UAV;
+typedef pair<int, UAV> PAIR_UAV;
 
 
 
@@ -128,6 +128,9 @@ class UAV_TASK{
     vector<UAV> uavBackHomeQueue;
 
     vector<pair<int, int>> weUavObstaclePos;
+
+
+    vector<pair<int, UAV>> name_score_vec;
 
 
     int m_weMoney;

@@ -1474,7 +1474,18 @@ void UAV_TASK::uavTaskProcess(MATCH_STATUS * pstMatch)
 
    // cout<<endl;
     //把map中元素转存到vector中
-    vector< pair<int, UAV>> name_score_vec(m_weUavID.begin(), m_weUavID.end());
+
+    name_score_vec.clear();
+
+    for(map<int,UAV>::iterator it= m_weUavID.begin(); it!= m_weUavID.end(); it++)//扁历存在的ID
+    {
+        int uavIdTemp = it->first;
+        UAV uavStatusTemp = it->second;
+        name_score_vec.push_back(pair<int , UAV>(uavIdTemp,uavStatusTemp));
+
+    }
+  //  name_score_vec(m_weUavID.begin(), m_weUavID.end());
+
     sort(name_score_vec.begin(), name_score_vec.end(), cmp_by_valueMaxToMin);
     cout<<endl;
     for (unsigned int i = 0; i != name_score_vec.size(); ++i) {
