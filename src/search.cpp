@@ -48,6 +48,7 @@ void pathSearch::createSearchMap(vector<pair<int, int>> obstaclePos, int zHight)
 }
 vector<Node> pathSearch::createGraph(pair<int, int> start, pair<int, int> goal, int height, vector<pair<int, int>> obstaclePos)
 {
+
     SquareGraph *mySquareGreph = new SquareGraph(mapDimension);
 
     mySquareGreph->setFirstRobotPos(start);
@@ -57,6 +58,7 @@ vector<Node> pathSearch::createGraph(pair<int, int> start, pair<int, int> goal, 
     {
         height = mmap->getMapZsize();
     }
+
     for(int i = 0; i< mmap->getMapXsize();i++){
         for(int j=0; j< mmap->getMapYsize(); j++){
 
@@ -65,6 +67,7 @@ vector<Node> pathSearch::createGraph(pair<int, int> start, pair<int, int> goal, 
             mySquareGreph->setCellValue(make_pair(i, j), type);
         }
     }//初始化最初的地图
+
     if(obstaclePos.size()>0)
         mySquareGreph->setObstaclePos(obstaclePos);//添加障碍点
 
@@ -74,6 +77,7 @@ vector<Node> pathSearch::createGraph(pair<int, int> start, pair<int, int> goal, 
     path = mySquareGreph->executeAStar();
 
     delete mySquareGreph;
+
 
     return path;
 }

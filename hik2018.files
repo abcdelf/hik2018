@@ -1,3 +1,5 @@
+include/uavTask.h
+src/uavTask.cpp
 include/CmdParse.h
 include/JsonParse.h
 include/Node.h
