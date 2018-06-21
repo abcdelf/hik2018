@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
             return nRet;
         }
 
-        //printf("%s\n", pSendBuffer);
+         //printf("%s\n", pSendBuffer);
 
         // 接受当前比赛状态
         memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.3.1, 2018-06-20T11:06:31. -->
+<!-- Written by QtCreator 4.3.1, 2018-06-21T09:08:17. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -165,8 +165,8 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Arguments">
-59.110.142.4  32656 
-   47ca5401-30e5-4139-ae9b-501d12c7e845</value>
+39.107.126.155 31825 
+ 6ed0d0ec-71b5-4abe-b189-4a52527b04af</value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/hik2018/main.exe</value>
     <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.WorkingDirectory">%{buildDir}</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Run /home/hik2018/main.exe</value>
